@@ -1398,7 +1398,16 @@ root.Checker = { check, runCase };
       st.escTab=false;
     });
     var LH=21,PADT=10;
-    function addrMap(){var m={};var p=st.prog;if(p&&!p.errors.length&&!st.dirty){p.stmts.forEach(function(x){m[x.line]=x.addr})}return m}
+    // Addresses come from a live assembly of whatever is in the editor, so they show
+    // without pressing Run/Step. With an error, only the lines above the first error get one.
+    var live={src:null,prog:null};
+    function addrMap(){
+      var m={};
+      if(live.src!==ed.value){live.src=ed.value;try{live.prog=Sim.assemble(ed.value,data.spec.mem||'')}catch(e){live.prog=null}}
+      var p=live.prog;if(!p)return m;
+      var stop=p.errors.length?Math.min.apply(null,p.errors.map(function(e){return e.line||1e9})):1e9;
+      p.stmts.forEach(function(x){if(x.line<stop)m[x.line]=x.addr});
+      return m}
     function drawGutter(){
       var n=ed.value.split('\n').length,m=addrMap(),cur=curLine(),rows=[];
       for(var i=1;i<=n;i++){var a=m[i]!==undefined?H(m[i]):'          ';rows.push('<span class="'+(i===cur.line?'g-cur'+(cur.err?' g-err':''):'')+'">'+String(i).padStart(3,' ')+'  '+a+'</span>')}
