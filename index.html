@@ -457,7 +457,7 @@ td:first-child{font-family:var(--f-mono);font-size:13.5px;font-variant-numeric:t
     <span class="kind k-code">Code</span>
     <label class="done"><input type="checkbox" id="done-16" data-done="16"><span>Solved</span></label>
   </header>
-  <div class="q"><p>Assume a 16 MHz clock, SUBS = 1 cycle, a taken BNE = 2 cycles and a not-taken BNE = 1 cycle.</p><ol class='parts'><li>How many cycles does one pass of a <code>SUBS</code> / <code>BNE</code> loop take?</li><li>How many passes make 1 ms?</li><li>Write <code>DELAY_MS</code>: R0 = number of milliseconds, with nested loops. All registers unchanged.</li><li>Why can't the count from (b) be loaded with <code>MOV R1, #…</code>?</li></ol></div>
+  <div class="q"><p>Assume a 16 MHz clock, SUBS = 1 cycle, and BNE = 2 cycles when it jumps back (taken) or 1 cycle when it falls through on the last pass (not taken).</p><ol class='parts'><li>How many cycles does one pass of a <code>SUBS</code> / <code>BNE</code> loop take?</li><li>How many passes make 1 ms?</li><li>Write <code>DELAY_MS</code>: R0 = number of milliseconds, with nested loops. All registers unchanged.</li><li>Why can't the count from (b) be loaded with <code>MOV R1, #…</code>?</li></ol></div>
   <div class="btns">
     <button type="button" class="reveal" data-target="h16" aria-expanded="false">Hint</button>
     <button type="button" class="reveal" data-target="s16" aria-expanded="false">Solution</button>
