@@ -18,4 +18,4 @@ shared in case it helps anyone else. When something here disagrees with the lect
 
 Your "Solved" ticks and the code you type are stored only in your own browser.
 
-— H. Kerem Aktaş
+— H. Kerem Aktaş · hkeremaktas@gmail.com
