@@ -1391,7 +1391,7 @@ root.Checker = { check, runCase };
         memIn=box.querySelector('.sim-memhead input'), memTab=box.querySelector('.sim-memtab'), checks=box.querySelector('.sim-checks');
     ed.value=store.get(key)||data.starter;
     var st={prog:null,cpu:null,dirty:true,memAddr:null,escTab:false,starterArm:0};
-    ed.addEventListener('input',function(){st.dirty=true;store.set(key,ed.value);drawGutter()});
+    ed.addEventListener('input',function(){st.dirty=true;store.set(key,ed.value);drawGutter();if(/err/.test(msg.className)){msg.className='sim-msg';msg.textContent='Code changed. Press Run, Step or Check.'}});
     ed.addEventListener('keydown',function(e){
       if(e.key==='Escape'){st.escTab=true;return}
       if(e.key==='Tab'&&!e.shiftKey&&!st.escTab){e.preventDefault();var a=ed.selectionStart,b=ed.selectionEnd;ed.value=ed.value.slice(0,a)+'\t'+ed.value.slice(b);ed.selectionStart=ed.selectionEnd=a+1;st.dirty=true;store.set(key,ed.value);drawGutter();return}
@@ -1479,7 +1479,7 @@ root.Checker = { check, runCase };
         if(st.cpu.state!=='halted'&&st.cpu.state!=='error'){msg.className='sim-msg err';msg.textContent='Stopped after 300 000 instructions without reaching "stop". Is there an endless loop?'}}
       else if(a==='step'){if(!ensure()){render();return}if(st.cpu.state==='halted'||st.cpu.state==='error'){render();return}st.cpu.step();render()}
       else if(a==='reset'){st.dirty=true;ensure();render()}
-      else if(a==='check'){var res=Checker.check(Sim,ed.value,data.spec);checks.hidden=false;
+      else if(a==='check'){st.dirty=true;ensure();render();var res=Checker.check(Sim,ed.value,data.spec);checks.hidden=false;
         var okn=res.items.filter(function(i){return i.ok}).length;
         checks.innerHTML='<li class="sim-sum">'+(res.ok?'All '+okn+' checks pass.':okn+' of '+res.items.length+' checks pass.')+'</li>'+res.items.map(function(i){return '<li class="'+(i.ok?'ok':'bad')+'"><b>'+(i.ok?'Pass':'Fail')+'</b><span>'+esc(i.text)+'</span></li>'}).join('');
         if(res.ok){var cb=document.getElementById('done-'+nn);if(cb&&!cb.checked){cb.checked=true;cb.dispatchEvent(new Event('change'))}}}
