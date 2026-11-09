@@ -10,8 +10,8 @@ shared in case it helps anyone else. When something here disagrees with the lect
 
 ## Contents
 
-- [`index.html`](index.html) – **Week 5 Drills**: 23 practice problems on the stack, subroutines, recursion,
-  delay loops and interrupts (Cortex-M4, Keil syntax), with hints, solutions and a built-in simulator that
+- [`index.html`](index.html) – **Week 5 Drills**: 24 practice problems on the stack, subroutines, recursion,
+  delay loops, interrupts and a past-quiz-style sorting problem (Cortex-M4, Keil syntax), with hints, solutions and a built-in simulator that
   runs and checks your code for the code problems.
   Download `index.html` and open it in a browser – it is a single self-contained file.
   Live version: https://keremaktas.tr/
