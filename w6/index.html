@@ -1,0 +1,1502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{color-scheme:light dark;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>EE447 Week 6 Drills</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one reading column of problem cards under a sticky bar (progress, syntax switch, topic links).
+   Look: a datasheet / register-map feel - cool greys, one teal accent, monospace for anything the CPU sees. */
+:root{
+  --bg:#eef2f4; --surface:#ffffff; --ink:#15222b; --muted:#566a76; --rule:#d3dce1;
+  --accent:#00718a; --accent-soft:#e0f0f3; --amber:#a35d12; --amber-soft:#fbefe1;
+  --violet:#5b4bb0; --violet-soft:#ecebfa; --red:#b3372b; --red-soft:#fbe9e6;
+  --code-bg:#f5f8f9; --code-ink:#1d2a33; --c-op:#00627a; --c-rg:#7a3fa0; --c-im:#a35d12; --c-cm:#71848f; --c-lb:#15222b;
+  --f-display:"Barlow Semi Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f171c; --surface:#16222a; --ink:#e2eaee; --muted:#93a6b1; --rule:#26353f;
+  --accent:#4cc4dd; --accent-soft:#11343d; --amber:#e5a65d; --amber-soft:#3a2a17;
+  --violet:#a99cf0; --violet-soft:#272447; --red:#f08a7e; --red-soft:#3d1f1b;
+  --code-bg:#0c1318; --code-ink:#d7e2e8; --c-op:#5cc9e0; --c-rg:#c9a2ea; --c-im:#e5a65d; --c-cm:#7d929d; --c-lb:#f1f6f8;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f171c; --surface:#16222a; --ink:#e2eaee; --muted:#93a6b1; --rule:#26353f;
+  --accent:#4cc4dd; --accent-soft:#11343d; --amber:#e5a65d; --amber-soft:#3a2a17;
+  --violet:#a99cf0; --violet-soft:#272447; --red:#f08a7e; --red-soft:#3d1f1b;
+  --code-bg:#0c1318; --code-ink:#d7e2e8; --c-op:#5cc9e0; --c-rg:#c9a2ea; --c-im:#e5a65d; --c-cm:#7d929d; --c-lb:#f1f6f8;
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1180px;margin:0 auto}
+code,pre{font-family:var(--f-mono)}
+code{font-size:.86em;background:var(--code-bg);border:1px solid var(--rule);border-radius:4px;padding:.05em .3em;white-space:nowrap}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
+
+/* intro */
+.intro{padding-top:36px;padding-bottom:8px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+h1{font-size:clamp(34px,6vw,48px);font-weight:700;line-height:1.02;letter-spacing:-.01em;margin-top:6px}
+.lede{color:var(--muted);max-width:62ch;margin:12px 0 0}
+.rules{margin:14px 0 0;padding:12px 14px;border-left:3px solid var(--accent);background:var(--surface);font-size:15px;color:var(--muted)}
+.rules b{color:var(--ink)}
+.disclaimer{margin:16px 0 0;padding:12px 14px;border:1px solid var(--amber);border-radius:8px;background:var(--amber-soft);font-size:15px;max-width:90ch}
+.disclaimer b{color:var(--amber)}
+
+/* sticky bar */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--rule);margin-top:18px;padding-block:10px}
+.bar-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.prog{display:flex;align-items:center;gap:10px;flex:1 1 220px;min-width:0}
+.prog-n{font-family:var(--f-mono);font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.meter{flex:1;height:6px;background:var(--rule);border-radius:3px;overflow:hidden;min-width:60px}
+.meter i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s}
+.nav{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.nav a{font:600 14px var(--f-display);letter-spacing:.02em;color:var(--ink);text-decoration:none;padding:3px 10px;border:1px solid var(--rule);border-radius:99px;background:var(--surface)}
+.nav a span{font-family:var(--f-mono);font-weight:400;font-size:11px;color:var(--muted);margin-left:6px}
+.nav a:hover{border-color:var(--accent)}
+
+/* sections + cards */
+.sec{scroll-margin-top:110px;margin-top:34px}
+.sec-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;border-bottom:2px solid var(--ink);padding-bottom:6px;margin-bottom:14px}
+.sec-h h2{font-size:28px;font-weight:700;letter-spacing:.01em}
+.sec-h p{margin:0;color:var(--muted);font-size:15px}
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:18px 18px 16px;margin-bottom:14px;scroll-margin-top:110px;min-width:0}
+.card.is-done{border-color:color-mix(in srgb,var(--accent) 45%,var(--rule))}
+.card-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.num{font-family:var(--f-mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.card-h h3{font-size:22px;font-weight:600;flex:1 1 200px;min-width:0;line-height:1.15}
+.kind{font:600 12px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;padding:2px 8px;border-radius:4px}
+.k-code{background:var(--accent-soft);color:var(--accent)}
+.k-trace{background:var(--amber-soft);color:var(--amber)}
+.k-concept{background:var(--violet-soft);color:var(--violet)}
+.k-bug{background:var(--red-soft);color:var(--red)}
+.done{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:var(--muted);cursor:pointer;user-select:none}
+.done input{width:18px;height:18px;accent-color:var(--accent);margin:0}
+.q{margin-top:8px}
+.q p{margin:.5em 0;max-width:90ch}
+.parts{margin:.4em 0;padding-left:1.4em}
+.parts li{margin:.25em 0;padding-left:.2em}
+.parts{list-style:lower-alpha}
+.btns{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.reveal{font:600 14px var(--f-body);padding:6px 14px;border-radius:6px;border:1px solid var(--rule);background:var(--bg);color:var(--ink);cursor:pointer}
+.reveal:hover{border-color:var(--accent)}
+.reveal[aria-expanded="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hint{margin-top:12px;padding:10px 12px;background:var(--amber-soft);border-radius:6px;font-size:16px}
+.tag{font:600 11px var(--f-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--amber);margin-right:4px}
+.sol{margin-top:14px;padding-top:12px;border-top:1px dashed var(--rule)}
+.sol p{margin:.5em 0}
+
+/* code + tables */
+pre{margin:0;overflow-x:auto;font-size:13.5px;line-height:1.55;tab-size:8}
+.snip{background:var(--code-bg);border:1px solid var(--rule);border-radius:6px;padding:10px 12px;margin:.6em 0;color:var(--code-ink)}
+.code{margin-top:12px;border:1px solid var(--rule);border-radius:6px;background:var(--code-bg);min-width:0}
+.codebar{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;border-bottom:1px solid var(--rule)}
+.codename{font:600 11px var(--f-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.copy{font:600 12px var(--f-mono);background:transparent;border:1px solid var(--rule);border-radius:4px;color:var(--muted);padding:2px 8px;cursor:pointer}
+.code pre{padding:10px 12px;color:var(--code-ink)}
+pre.lnum .cl{display:block;min-height:1.55em}
+pre.lnum .cl::before{content:attr(data-n);display:inline-block;width:3ch;margin-right:1.5ch;text-align:right;color:var(--c-cm);opacity:.75;user-select:none;-webkit-user-select:none}
+pre.lnum[data-addr] .cl::before{content:attr(data-n) "  " attr(data-a);width:15ch;text-align:left;white-space:pre}
+.op{color:var(--c-op);font-weight:600}.dr{color:var(--muted);font-weight:600}.rg{color:var(--c-rg)}.im{color:var(--c-im)}.cm{color:var(--c-cm);font-style:italic}.lb{color:var(--c-lb);font-weight:600}
+.tw{overflow-x:auto;margin:.6em 0}
+table{border-collapse:collapse;font-size:15px;min-width:100%}
+th,td{border-bottom:1px solid var(--rule);padding:6px 10px;text-align:left;vertical-align:top}
+th{font:600 12px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+td:first-child{font-family:var(--f-mono);font-size:13.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.mac{margin-top:12px;padding:10px 12px;border:1px solid var(--rule);border-radius:6px;font-size:15px}
+.mac-h{font:600 11px var(--f-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--accent)}
+.mac p{margin:.35em 0}
+.mac code{white-space:normal;word-break:break-word}
+.exp span{font:600 11px var(--f-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-right:4px}
+.foot{margin-top:40px;color:var(--muted);font-size:14px;border-top:1px solid var(--rule);padding-top:12px}
+
+/* simulator */
+.simbtn{border-color:var(--accent);color:var(--accent)}
+.simbtn[aria-expanded="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.sim{margin-top:14px;border:1px solid var(--accent);border-radius:8px;background:var(--bg);overflow:hidden;min-width:0}
+.sim-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 10px;background:var(--surface);border-bottom:1px solid var(--rule)}
+.sim-bar .sp{flex:1 1 auto}
+.sbtn{font:600 13px var(--f-body);padding:5px 12px;border-radius:6px;border:1px solid var(--rule);background:var(--bg);color:var(--ink);cursor:pointer}
+.sbtn:hover{border-color:var(--accent)}
+.sbtn.pri{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.sbtn.chk{border-color:var(--ink)}
+.sim-note{font:12px var(--f-mono);color:var(--muted)}
+.sim-edwrap{display:grid;grid-template-columns:auto minmax(0,1fr);background:var(--code-bg);border-bottom:1px solid var(--rule);min-width:0}
+.sim-gut{margin:0;padding:10px 6px 10px 8px;font:12px/21px var(--f-mono);color:var(--c-cm);overflow:hidden;white-space:pre;user-select:none;-webkit-user-select:none;border-right:1px solid var(--rule);text-align:left}
+.sim-gut .g-cur{color:var(--accent);font-weight:600}
+.sim-gut .g-err{color:var(--red)}
+.sim-edbox{position:relative;min-width:0}
+.sim-hl{position:absolute;left:0;right:0;height:21px;background:var(--accent-soft);pointer-events:none}
+.sim-hl.err{background:var(--red-soft)}
+.sim-ed{position:relative;display:block;width:100%;height:420px;min-height:200px;border:0;background:transparent;color:var(--code-ink);font:13.5px/21px var(--f-mono);padding:10px 12px;resize:vertical;white-space:pre;overflow:auto;tab-size:8}
+.sim-ed:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.sim-out{padding:10px;display:grid;gap:10px;align-content:start;min-width:0}
+.sim-body{display:grid;grid-template-columns:minmax(0,1fr)}
+@media (min-width:980px){.sim-body{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)}.sim-edwrap{border-bottom:0;border-right:1px solid var(--rule)}.sim-ed{height:620px}}
+.sim-msg{font-size:14px;padding:7px 10px;border-radius:6px;background:var(--surface);border:1px solid var(--rule);overflow-wrap:anywhere}
+.sim-msg.err{background:var(--red-soft);color:var(--red);border-color:transparent}
+.sim-msg.ok{background:var(--accent-soft);color:var(--accent);border-color:transparent}
+.sim-msg code{white-space:pre-wrap}
+.sim-msg ul{margin:4px 0 0;padding-left:18px}
+.sim-regs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+@media (max-width:560px){.sim-regs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.sreg{background:var(--surface);border:1px solid var(--rule);border-radius:5px;padding:3px 7px;font:12.5px var(--f-mono);font-variant-numeric:tabular-nums;display:flex;justify-content:space-between;gap:6px;min-width:0}
+.sreg b{color:var(--muted);font-weight:600}
+.sreg span{overflow-wrap:anywhere;text-align:right}
+.sreg.chg{background:var(--amber-soft);border-color:transparent}
+.sreg.chg span{color:var(--amber);font-weight:600}
+.sim-flags{display:flex;flex-wrap:wrap;gap:6px;font:12.5px var(--f-mono);color:var(--muted)}
+.sim-flags span{padding:2px 7px;border:1px solid var(--rule);border-radius:4px;background:var(--surface)}
+.sim-flags span.on{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.sim-mem{display:grid;gap:6px}
+.sim-memhead{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;color:var(--muted)}
+.sim-memhead input{font:13px var(--f-mono);width:14ch;padding:3px 6px;border:1px solid var(--rule);border-radius:5px;background:var(--surface);color:var(--ink)}
+.sim-memtab{overflow-x:auto}
+.sim-memtab table{font:12.5px var(--f-mono);min-width:0}
+.sim-memtab td,.sim-memtab th{padding:2px 10px;border-bottom:1px solid var(--rule)}
+.sim-memtab td.w{background:var(--amber-soft);color:var(--amber);font-weight:600}
+.sim-memtab td.lab{color:var(--accent);font-family:var(--f-mono)}
+.sim-checks{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.sim-checks li{display:flex;gap:8px;align-items:flex-start;font-size:14px;padding:5px 8px;border-radius:5px;background:var(--surface);border:1px solid var(--rule)}
+.sim-checks li b{font:600 11px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;padding:2px 6px;border-radius:4px;white-space:nowrap}
+.sim-checks li.ok b{background:var(--accent-soft);color:var(--accent)}
+.sim-checks li.bad b{background:var(--red-soft);color:var(--red)}
+.sim-checks li span{min-width:0;overflow-wrap:anywhere}
+.sim-sum{font:600 14px var(--f-body)}
+.back{display:inline-block;margin-bottom:10px;font:600 13px var(--f-ui,inherit);color:var(--accent);text-decoration:none}
+.back:hover{text-decoration:underline}
+.notes{margin-top:12px;font-size:14px;color:var(--muted)}
+.notes summary{cursor:pointer;color:var(--ink);font-weight:600}
+.notes ul{margin:6px 0 0 18px;padding:0}
+.sim-pins{display:grid;gap:6px}
+.pinrow{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.pinrow>b{font:600 12px var(--f-mono);width:52px;color:var(--muted)}
+.pin{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:38px;padding:4px 2px;border:1px solid var(--rule);border-radius:6px;background:var(--surface);font:11px var(--f-mono);color:var(--muted)}
+.pin i{width:14px;height:14px;border-radius:50%;border:1px solid var(--rule);background:var(--bg)}
+.pin.out.on i{background:#e2a400;border-color:#c48b00;box-shadow:0 0 6px #f5c242}
+.pin.in{cursor:pointer;color:var(--ink)}
+.pin.in i{border-radius:3px}
+.pin.in.on i{background:var(--accent);border-color:var(--accent)}
+.pin.off{opacity:.45}
+.kp{display:grid;grid-template-columns:repeat(3,40px);gap:4px}
+.kp button{font:600 14px var(--f-mono);padding:6px 0;border:1px solid var(--rule);border-radius:6px;background:var(--surface);color:var(--ink);cursor:pointer}
+.kp button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+@media (prefers-reduced-motion:reduce){.meter i{transition:none}}
+@media (max-width:520px){body{font-size:16px}.card{padding:14px}.card-h h3{font-size:20px}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header class="intro">
+    <a class="back" href="../">← All weeks</a>
+    <div class="eyebrow">EE447 · Microprocessors · Week 6</div>
+    <h1>Week 6 Drills</h1>
+    <p class="lede">15 practice problems on the TM4C123's general-purpose I/O: register addresses, the masked data register, port initialization, switches, LEDs, seven-segment displays, keypads and GPIO interrupts. The 10 code problems have a simulator that models the GPIO ports: the clock gate, the masked GPIODATA address, DEN, the PF0 lock, RIS/MIS/ICR and the pins themselves, which are shown as LEDs and clickable inputs. Write your answer in Keil syntax, step through it, and press Check.</p>
+    <div class="disclaimer" role="note"><b>Please read first.</b> The problems, solutions and explanations on this page were written with AI and checked by me, but they can still contain mistakes. I'm a student, not an instructor or teaching assistant of EE447. This is simply how I practised for the course, shared in case it helps anyone else. When something here disagrees with the lecture notes, trust the lecture notes.</div>
+    <p class="rules"><b>Unless a problem says otherwise:</b> registers of other pins and other ports must keep their bits (use read-modify-write: LDR, ORR/BIC, STR), a subroutine leaves every register unchanged except its result, and all code is in <b>Keil</b> syntax. Port bases: A 0x40004000, B 0x40005000, C 0x40006000, D 0x40007000, E 0x40024000, F 0x40025000. RCGCGPIO is at 0x400FE608.</p><details class="notes"><summary>Slide notes: small mistakes in the Week 6 slides</summary><ul><li>GPIOIS (slides 25 and 87): the summary lines contradict each other. Correct: 0 = edge-sensitive, 1 = level-sensitive.</li><li>GPIOPDR (slide 38): the offset is 0x514, not 0x510 (0x510 is GPIOPUR).</li><li>Slides 43 and 68: <code>ORR #0x2F</code> is described as "all 5 ports", but 0x2F is A, B, C, D and F; it skips E.</li><li>Slide 49 defines <code>PBdata</code> but loads <code>=PFdata</code>; slide 44's comment says Port B in Port F code.</li><li>Slide 71 uses the older RCGC2 register (0x400FE108); the rest of the slides use RCGCGPIO (0x400FE608).</li></ul></details>
+  </header>
+  <div class="bar">
+    <div class="bar-row">
+      <div class="prog"><span class="prog-n"><b id="done-n">0</b> / 15 solved</span><div class="meter" aria-hidden="true"><i id="meter"></i></div></div>
+    </div>
+    <nav class="nav" aria-label="Topics"><a href="#reg">Registers<span>3</span></a><a href="#init">Initialization<span>3</span></a><a href="#dev">Switches, LEDs, displays<span>4</span></a><a href="#gint">GPIO interrupts<span>4</span></a><a href="#quiz">Past quiz style<span>1</span></a></nav>
+  </div>
+  <section class="sec" id="reg"><div class="sec-h"><h2>Registers</h2><p>base + offset, and the masked GPIODATA address</p></div>
+<article class="card" id="q01">
+  <header class="card-h">
+    <span class="num">W6·01</span>
+    <h3>Find the address</h3>
+    <span class="kind k-concept">Concept</span>
+    <label class="done"><input type="checkbox" id="done-01" data-done="1"><span>Solved</span></label>
+  </header>
+  <div class="q"><p>Using the port base addresses and the register offsets from the slides, give the full address of each register.</p><ol class='parts'><li>GPIODIR of Port D</li><li>GPIODEN of Port E</li><li>GPIOPUR of Port F</li><li>GPIOICR of Port B</li><li>GPIOPCTL of Port A</li><li>GPIOLOCK of Port C</li><li>Which bit of RCGCGPIO turns on Port E's clock, and what value do you ORR in?</li></ol></div>
+  <div class="btns">
+    <button type="button" class="reveal" data-target="h1" aria-expanded="false">Hint</button>
+    <button type="button" class="reveal" data-target="s1" aria-expanded="false">Solution</button>
+    
+  </div>
+  
+  <div class="hint" id="h1" hidden><span class="tag">Hint</span> Address = port base + register offset. Offsets: DIR 0x400, ICR 0x41C, PUR 0x510, DEN 0x51C, LOCK 0x520, PCTL 0x52C. Ports E and F are not 0x1000 after D.</div>
+  <div class="sol" id="s1" hidden><div class="tw"><table><thead><tr><th>Part</th><th>Base + offset</th><th>Address</th></tr></thead><tbody><tr><td>a</td><td>0x40007000 + 0x400</td><td>0x40007400</td></tr><tr><td>b</td><td>0x40024000 + 0x51C</td><td>0x4002451C</td></tr><tr><td>c</td><td>0x40025000 + 0x510</td><td>0x40025510</td></tr><tr><td>d</td><td>0x40005000 + 0x41C</td><td>0x4000541C</td></tr><tr><td>e</td><td>0x40004000 + 0x52C</td><td>0x4000452C</td></tr><tr><td>f</td><td>0x40006000 + 0x520</td><td>0x40006520</td></tr></tbody></table></div><p><b>g)</b> Bit 0 is Port A, bit 1 Port B … so Port E is <b>bit 4</b>: <code>ORR R0, R0, #0x10</code>.</p><p>Every port has the same set of registers at the same offsets, so you only need the six bases and one offset table.</p></div>
+</article>
+<article class="card" id="q02">
+  <header class="card-h">
+    <span class="num">W6·02</span>
+    <h3>The masked GPIODATA address</h3>
+    <span class="kind k-trace">Trace</span>
+    <label class="done"><input type="checkbox" id="done-02" data-done="2"><span>Solved</span></label>
+  </header>
+  <div class="q"><p>Bits 9:2 of the address used to access GPIODATA select which pins the access affects (slide 15).</p><ol class='parts'><li>Which address reads or writes only PF4 and PF0?</li><li>Which address covers PB3–PB0 only?</li><li>Which address reads all 8 pins of Port A?</li><li>PF3–PF0 are outputs and GPIODATA's pins currently read 0x06. This runs:</li></ol><pre class="lnum snip"><span class="cl" data-n=" 1">	<span class="op">LDR</span>	<span class="rg">R1</span>, =0x40025030</span><span class="cl" data-n=" 2">	<span class="op">MOV</span>	<span class="rg">R0</span>, <span class="im">#0xFF</span></span><span class="cl" data-n=" 3">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span></pre><p>Which pins change, and what do PF3–PF0 read afterwards?</p><ol class='parts' start='5'><li>Next, <code>LDR R0, [R2]</code> runs with R2 = 0x40025018. What is R0: 0x03, 0x06, or something else?</li></ol></div>
+  <div class="btns">
+    <button type="button" class="reveal" data-target="h2" aria-expanded="false">Hint</button>
+    <button type="button" class="reveal" data-target="s2" aria-expanded="false">Solution</button>
+    
+  </div>
+  
+  <div class="hint" id="h2" hidden><span class="tag">Hint</span> Mask = the pins you want as an 8-bit value. Address = base + (mask &lt;&lt; 2). The data bits themselves stay in their normal positions.</div>
+  <div class="sol" id="s2" hidden><p><b>a)</b> Mask 0001 0001 = 0x11, shifted left by 2 = 0x44, so <b>0x40025044</b>.</p><p><b>b)</b> Mask 0x0F → 0x3C, so <b>0x4000503C</b> (the slides' polling example uses this one).</p><p><b>c)</b> Mask 0xFF → 0x3FC, so <b>0x400043FC</b>.</p><p><b>d)</b> 0x030 >> 2 = 0x0C = 0000 1100, so only <b>PF3 and PF2</b> are written; both become 1. PF1 and PF0 keep their values. 0x06 becomes <b>0x0E</b>.</p><p><b>e)</b> 0x018 >> 2 = 0x06: PF2 and PF1 are read, everything else reads 0. The bits are not shifted, so R0 = <b>0x06</b>, not 0x03.</p><p>See also: Valvano, <i>Embedded Systems: Introduction to Arm Cortex-M</i>, section 4 ("bit-specific addressing", Program 4.11 and exercises 4.8–4.9).</p></div>
+</article>
+<article class="card" id="q03">
+  <header class="card-h">
+    <span class="num">W6·03</span>
+    <h3>Change two LEDs with one store</h3>
+    <span class="kind k-code">Code</span>
+    <label class="done"><input type="checkbox" id="done-03" data-done="3"><span>Solved</span></label>
+  </header>
+  <div class="q"><p>The LaunchPad's RGB LED is on PF1 (red), PF2 (blue) and PF3 (green); Port F is already set up with PF3–PF1 as outputs. Turn red <b>off</b> and green <b>on</b>, and leave blue exactly as it is. Use <b>one</b> <code>STR</code> and don't read GPIODATA.</p></div>
+  <div class="btns">
+    <button type="button" class="reveal" data-target="h3" aria-expanded="false">Hint</button>
+    <button type="button" class="reveal" data-target="s3" aria-expanded="false">Solution</button>
+    <button type="button" class="reveal simbtn" data-target="sim3" aria-expanded="false">Simulator</button>
+  </div>
+  <div class="sim" id="sim3" data-n="3" hidden></div>
+  <div class="hint" id="h3" hidden><span class="tag">Hint</span> Pick the GPIODATA address whose mask contains only PF3 and PF1. Then the value you store only needs the right bits for those two pins.</div>
+  <div class="sol" id="s3" hidden><p>The mask 0000 1010 = 0x0A selects PF3 and PF1, so the address is 0x40025000 + (0x0A &lt;&lt; 2) = <b>0x40025028</b>. Storing 0x08 sets PF3 = 1 and PF1 = 0. PF2 is outside the mask, so whatever value bit 2 of R0 has, blue doesn't change. Without the mask you would need LDR, BIC, ORR and STR on 0x400253FC.</p><div class="code"><div class="codebar"><span class="codename">Solution</span><button class="copy" type="button" data-copy>Copy</button></div><pre class="lnum" data-addr><span class="cl" data-n=" 1"><span class="cm">; Port F is already set up: PF3-PF1 outputs (LEDs), PF4 input.</span></span><span class="cl" data-n=" 2"><span class="lb">PF_RG</span>	<span class="dr">EQU</span>	0x40025028		<span class="cm">; bits 9:2 = 0000 1010 -&gt; only PF3 and PF1</span></span><span class="cl" data-n=" 3"> </span><span class="cl" data-n=" 4">	<span class="dr">AREA</span>	main, CODE, READONLY</span><span class="cl" data-n=" 5">	<span class="dr">THUMB</span></span><span class="cl" data-n=" 6">	<span class="dr">EXPORT</span>	__main</span><span class="cl" data-n=" 7"><span class="lb">__main</span></span><span class="cl" data-n=" 8">	<span class="op">LDR</span>	<span class="rg">R1</span>, =PF_RG</span><span class="cl" data-n=" 9">	<span class="op">MOV</span>	<span class="rg">R0</span>, <span class="im">#0x08</span>		<span class="cm">; PF3 = 1 (green on), PF1 = 0 (red off)</span></span><span class="cl" data-n="10">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]		<span class="cm">; PF2 and the other pins are not affected</span></span><span class="cl" data-n="11"><span class="lb">stop</span>	<span class="op">B</span>	stop</span><span class="cl" data-n="12">	<span class="dr">END</span></span><span class="cl" data-n="13"> </span></pre></div></div>
+</article></section><section class="sec" id="init"><div class="sec-h"><h2>Initialization</h2><p>clock, direction, digital enable, lock</p></div>
+<article class="card" id="q04">
+  <header class="card-h">
+    <span class="num">W6·04</span>
+    <h3>Set up Port F for LEDs and a switch</h3>
+    <span class="kind k-code">Code</span>
+    <label class="done"><input type="checkbox" id="done-04" data-done="4"><span>Solved</span></label>
+  </header>
+  <div class="q"><p>Initialize Port F so that PF3–PF1 are outputs for the LEDs and PF4 is an input for switch SW1. SW1 connects PF4 to ground when pressed, so it needs the internal pull-up. Follow the slides' sequence: clock, direction, alternate function, PCTL, analog, pull-up, digital enable.</p><p>Other code already uses PF0 and the other ports, so <b>change only the bits of PF4–PF1</b> (and only Port F's clock bit). The checker starts with other pins' bits set.</p></div>
+  <div class="btns">
+    <button type="button" class="reveal" data-target="h4" aria-expanded="false">Hint</button>
+    <button type="button" class="reveal" data-target="s4" aria-expanded="false">Solution</button>
+    <button type="button" class="reveal simbtn" data-target="sim4" aria-expanded="false">Simulator</button>
+  </div>
+  <div class="sim" id="sim4" data-n="4" hidden></div>
+  <div class="hint" id="h4" hidden><span class="tag">Hint</span> Every step is LDR, ORR or BIC, STR. PCTL has 4 bits per pin: PF4–PF1 are bits 19–4, mask 0x000FFFF0. That mask doesn't fit an immediate, so load it with LDR =.</div>
+  <div class="sol" id="s4" hidden><p>Clock bit 5 (0x20) for Port F. DIR: ORR 0x0E (outputs), BIC 0x10 (input). AFSEL and AMSEL: BIC 0x1E. PCTL: clear nibbles 4–1. PUR: ORR 0x10. DEN: ORR 0x1E. With the checker's starting values the results are DIR = 0x8F, AFSEL = 0x81, PCTL = 0xF000000F, AMSEL = 0x81, PUR = 0x11, DEN = 0x9F: PF0's and bit 7's settings survive.</p><p>The two NOPs after the clock write match slide 43: the port needs a few cycles before its registers respond. See also: Valvano, Program 4.1 (both LaunchPad switches and the LED).</p><div class="code"><div class="codebar"><span class="codename">Solution</span><button class="copy" type="button" data-copy>Copy</button></div><pre class="lnum" data-addr><span class="cl" data-n=" 1"><span class="lb">SYSCTL_RCGCGPIO</span>	<span class="dr">EQU</span>	0x400FE608</span><span class="cl" data-n=" 2"><span class="lb">GPIO_PORTF_DIR</span>	<span class="dr">EQU</span>	0x40025400</span><span class="cl" data-n=" 3"><span class="lb">GPIO_PORTF_AFSEL</span>	<span class="dr">EQU</span>	0x40025420</span><span class="cl" data-n=" 4"><span class="lb">GPIO_PORTF_PUR</span>	<span class="dr">EQU</span>	0x40025510</span><span class="cl" data-n=" 5"><span class="lb">GPIO_PORTF_DEN</span>	<span class="dr">EQU</span>	0x4002551C</span><span class="cl" data-n=" 6"><span class="lb">GPIO_PORTF_AMSEL</span>	<span class="dr">EQU</span>	0x40025528</span><span class="cl" data-n=" 7"><span class="lb">GPIO_PORTF_PCTL</span>	<span class="dr">EQU</span>	0x4002552C</span><span class="cl" data-n=" 8"> </span><span class="cl" data-n=" 9">	<span class="dr">AREA</span>	main, CODE, READONLY</span><span class="cl" data-n="10">	<span class="dr">THUMB</span></span><span class="cl" data-n="11">	<span class="dr">EXPORT</span>	__main</span><span class="cl" data-n="12"><span class="lb">__main</span></span><span class="cl" data-n="13">	<span class="op">LDR</span>	<span class="rg">R1</span>, =SYSCTL_RCGCGPIO	<span class="cm">; 1) clock for Port F (bit 5)</span></span><span class="cl" data-n="14">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="15">	<span class="op">ORR</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x20</span></span><span class="cl" data-n="16">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="17">	<span class="op">NOP</span>				<span class="cm">; 2) give the clock time to start</span></span><span class="cl" data-n="18">	<span class="op">NOP</span></span><span class="cl" data-n="19">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTF_DIR	<span class="cm">; 3) PF3-PF1 out, PF4 in</span></span><span class="cl" data-n="20">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="21">	<span class="op">ORR</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x0E</span></span><span class="cl" data-n="22">	<span class="op">BIC</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x10</span></span><span class="cl" data-n="23">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="24">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTF_AFSEL	<span class="cm">; 4) plain GPIO, no alternate function</span></span><span class="cl" data-n="25">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="26">	<span class="op">BIC</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x1E</span></span><span class="cl" data-n="27">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="28">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTF_PCTL	<span class="cm">; 5) PCTL nibbles of PF4-PF1 = 0</span></span><span class="cl" data-n="29">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="30">	<span class="op">LDR</span>	<span class="rg">R2</span>, =0x000FFFF0</span><span class="cl" data-n="31">	<span class="op">BIC</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="rg">R2</span></span><span class="cl" data-n="32">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="33">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTF_AMSEL	<span class="cm">; 6) analog off</span></span><span class="cl" data-n="34">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="35">	<span class="op">BIC</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x1E</span></span><span class="cl" data-n="36">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="37">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTF_PUR	<span class="cm">; 7) pull-up on the switch pin</span></span><span class="cl" data-n="38">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="39">	<span class="op">ORR</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x10</span></span><span class="cl" data-n="40">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="41">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTF_DEN	<span class="cm">; 8) digital enable on PF4-PF1</span></span><span class="cl" data-n="42">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="43">	<span class="op">ORR</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x1E</span></span><span class="cl" data-n="44">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="45"><span class="lb">stop</span>	<span class="op">B</span>	stop</span><span class="cl" data-n="46">	<span class="dr">END</span></span><span class="cl" data-n="47"> </span></pre></div></div>
+</article>
+<article class="card" id="q05">
+  <header class="card-h">
+    <span class="num">W6·05</span>
+    <h3>SW2 never works</h3>
+    <span class="kind k-bug">Bug hunt</span>
+    <label class="done"><input type="checkbox" id="done-05" data-done="5"><span>Solved</span></label>
+  </header>
+  <div class="q"><p>This code is meant to set up both LaunchPad switches, SW1 on PF4 and SW2 on PF0, as inputs with pull-ups. SW1 works, but PF0 always reads 0, and its PUR and DEN bits stay 0 even though the code sets them. Find the cause and fix the code (it's the starter code in the simulator).</p><pre class="lnum snip"><span class="cl" data-n=" 1">	<span class="cm">; clock on, then:</span></span><span class="cl" data-n=" 2">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTF_DIR</span><span class="cl" data-n=" 3">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n=" 4">	<span class="op">BIC</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x11</span></span><span class="cl" data-n=" 5">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n=" 6">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTF_PUR</span><span class="cl" data-n=" 7">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n=" 8">	<span class="op">ORR</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x11</span></span><span class="cl" data-n=" 9">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="10">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTF_DEN</span><span class="cl" data-n="11">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="12">	<span class="op">ORR</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x11</span></span><span class="cl" data-n="13">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span></pre><ol class='parts'><li>Why are the writes to PF0's bits ignored?</li><li>Add the missing steps.</li><li>Why would <code>MOV R0, #0x01</code> / <code>STR R0, [CR]</code> break SW1?</li></ol></div>
+  <div class="btns">
+    <button type="button" class="reveal" data-target="h5" aria-expanded="false">Hint</button>
+    <button type="button" class="reveal" data-target="s5" aria-expanded="false">Solution</button>
+    <button type="button" class="reveal simbtn" data-target="sim5" aria-expanded="false">Simulator</button>
+  </div>
+  <div class="sim" id="sim5" data-n="5" hidden></div>
+  <div class="hint" id="h5" hidden><span class="tag">Hint</span> Slides 34–35: GPIOLOCK and GPIOCR. Which pins does TI protect, and what does a 0 bit in GPIOCR do to writes to AFSEL, PUR, PDR and DEN?</div>
+  <div class="sol" id="s5" hidden><p><b>a)</b> PF0 is one of the protected pins (it can be the NMI input). After reset GPIOCR bit 0 is 0, and GPIOCR decides which bits of AFSEL, PUR, PDR and DEN a write may change. So the PUR and DEN writes keep bit 0's old value.</p><p><b>b)</b> Before setting PUR and DEN: write <b>0x4C4F434B</b> to GPIOLOCK (0x40025520), then set bit 0 of GPIOCR (0x40025524). Only after the unlock does GPIOCR accept writes.</p><p><b>c)</b> GPIOCR = 0x01 would let only PF0's bits change. The later ORR into PUR and DEN would then lose bit 4, so SW1 would stop working. Use ORR (or write 0x1F) so the other pins stay committed. The simulator models this, so you can try it.</p><div class="code"><div class="codebar"><span class="codename">Solution</span><button class="copy" type="button" data-copy>Copy</button></div><pre class="lnum" data-addr><span class="cl" data-n=" 1"><span class="lb">SYSCTL_RCGCGPIO</span>	<span class="dr">EQU</span>	0x400FE608</span><span class="cl" data-n=" 2"><span class="lb">GPIO_PORTF_DIR</span>	<span class="dr">EQU</span>	0x40025400</span><span class="cl" data-n=" 3"><span class="lb">GPIO_PORTF_PUR</span>	<span class="dr">EQU</span>	0x40025510</span><span class="cl" data-n=" 4"><span class="lb">GPIO_PORTF_DEN</span>	<span class="dr">EQU</span>	0x4002551C</span><span class="cl" data-n=" 5"><span class="lb">GPIO_PORTF_LOCK</span>	<span class="dr">EQU</span>	0x40025520</span><span class="cl" data-n=" 6"><span class="lb">GPIO_PORTF_CR</span>	<span class="dr">EQU</span>	0x40025524</span><span class="cl" data-n=" 7"> </span><span class="cl" data-n=" 8">	<span class="dr">AREA</span>	main, CODE, READONLY</span><span class="cl" data-n=" 9">	<span class="dr">THUMB</span></span><span class="cl" data-n="10">	<span class="dr">EXPORT</span>	__main</span><span class="cl" data-n="11"><span class="lb">__main</span></span><span class="cl" data-n="12">	<span class="op">LDR</span>	<span class="rg">R1</span>, =SYSCTL_RCGCGPIO</span><span class="cl" data-n="13">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="14">	<span class="op">ORR</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x20</span></span><span class="cl" data-n="15">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="16">	<span class="op">NOP</span></span><span class="cl" data-n="17">	<span class="op">NOP</span></span><span class="cl" data-n="18">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTF_LOCK	<span class="cm">; unlock Port F</span></span><span class="cl" data-n="19">	<span class="op">LDR</span>	<span class="rg">R0</span>, =0x4C4F434B</span><span class="cl" data-n="20">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="21">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTF_CR	<span class="cm">; allow changes to PF0 as well</span></span><span class="cl" data-n="22">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="23">	<span class="op">ORR</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x01</span></span><span class="cl" data-n="24">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="25">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTF_DIR	<span class="cm">; PF4 and PF0 inputs</span></span><span class="cl" data-n="26">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="27">	<span class="op">BIC</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x11</span></span><span class="cl" data-n="28">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="29">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTF_PUR	<span class="cm">; pull-ups for both switches</span></span><span class="cl" data-n="30">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="31">	<span class="op">ORR</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x11</span></span><span class="cl" data-n="32">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="33">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTF_DEN</span><span class="cl" data-n="34">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="35">	<span class="op">ORR</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x11</span></span><span class="cl" data-n="36">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="37"><span class="lb">stop</span>	<span class="op">B</span>	stop</span><span class="cl" data-n="38">	<span class="dr">END</span></span><span class="cl" data-n="39"> </span></pre></div></div>
+</article>
+<article class="card" id="q06">
+  <header class="card-h">
+    <span class="num">W6·06</span>
+    <h3>Three bugs in a Port B setup</h3>
+    <span class="kind k-bug">Bug hunt</span>
+    <label class="done"><input type="checkbox" id="done-06" data-done="6"><span>Solved</span></label>
+  </header>
+  <div class="q"><p>PB5 and PB4 should become outputs for two LEDs, and both LEDs should light. Other code already uses Port A (its clock is on) and PB3–PB0. The starter code in the simulator has <b>three</b> bugs: one makes it crash, one breaks other code, and one leaves the LEDs dark. Find and fix all three.</p></div>
+  <div class="btns">
+    <button type="button" class="reveal" data-target="h6" aria-expanded="false">Hint</button>
+    <button type="button" class="reveal" data-target="s6" aria-expanded="false">Solution</button>
+    <button type="button" class="reveal simbtn" data-target="sim6" aria-expanded="false">Simulator</button>
+  </div>
+  <div class="sim" id="sim6" data-n="6" hidden></div>
+  <div class="hint" id="h6" hidden><span class="tag">Hint</span> Run it and read the error. Then look at how RCGCGPIO is written, and compare the steps with the slides' sequence: is one missing?</div>
+  <div class="sol" id="s6" hidden><ol><li><b>Order:</b> GPIODIR is accessed before Port B's clock is on. On the board that's a bus fault. Enable the clock first.</li><li><b>MOV instead of ORR:</b> <code>MOV R0, #0x02</code> / <code>STR</code> turns on Port B's clock but turns <i>off</i> Port A's. Use LDR, ORR, STR.</li><li><b>GPIODEN missing:</b> without DEN the pins are not driven, so writing 1s to GPIODATA does nothing. ORR 0x30 into GPIODEN.</li></ol><p>After the fixes: RCGCGPIO = 0x03, DIR = 0x3C, AFSEL = 0x03, DEN = 0x3F, and PB5, PB4 are high.</p><div class="code"><div class="codebar"><span class="codename">Solution</span><button class="copy" type="button" data-copy>Copy</button></div><pre class="lnum" data-addr><span class="cl" data-n=" 1"><span class="lb">SYSCTL_RCGCGPIO</span>	<span class="dr">EQU</span>	0x400FE608</span><span class="cl" data-n=" 2"><span class="lb">GPIO_PORTB_DIR</span>	<span class="dr">EQU</span>	0x40005400</span><span class="cl" data-n=" 3"><span class="lb">GPIO_PORTB_AFSEL</span>	<span class="dr">EQU</span>	0x40005420</span><span class="cl" data-n=" 4"><span class="lb">GPIO_PORTB_DEN</span>	<span class="dr">EQU</span>	0x4000551C</span><span class="cl" data-n=" 5"><span class="lb">PB_LEDS</span>	<span class="dr">EQU</span>	0x400050C0		<span class="cm">; PB5 and PB4 only</span></span><span class="cl" data-n=" 6"> </span><span class="cl" data-n=" 7">	<span class="dr">AREA</span>	main, CODE, READONLY</span><span class="cl" data-n=" 8">	<span class="dr">THUMB</span></span><span class="cl" data-n=" 9">	<span class="dr">EXPORT</span>	__main</span><span class="cl" data-n="10"><span class="lb">__main</span></span><span class="cl" data-n="11">	<span class="op">LDR</span>	<span class="rg">R1</span>, =SYSCTL_RCGCGPIO	<span class="cm">; fix 1: clock first</span></span><span class="cl" data-n="12">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]		<span class="cm">; fix 2: read-modify-write</span></span><span class="cl" data-n="13">	<span class="op">ORR</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x02</span></span><span class="cl" data-n="14">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="15">	<span class="op">NOP</span></span><span class="cl" data-n="16">	<span class="op">NOP</span></span><span class="cl" data-n="17">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTB_DIR</span><span class="cl" data-n="18">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="19">	<span class="op">ORR</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x30</span></span><span class="cl" data-n="20">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="21">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTB_AFSEL</span><span class="cl" data-n="22">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="23">	<span class="op">BIC</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x30</span></span><span class="cl" data-n="24">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="25">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTB_DEN	<span class="cm">; fix 3: digital enable</span></span><span class="cl" data-n="26">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="27">	<span class="op">ORR</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x30</span></span><span class="cl" data-n="28">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="29">	<span class="op">LDR</span>	<span class="rg">R1</span>, =PB_LEDS</span><span class="cl" data-n="30">	<span class="op">MOV</span>	<span class="rg">R0</span>, <span class="im">#0x30</span>		<span class="cm">; both LEDs on</span></span><span class="cl" data-n="31">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="32"><span class="lb">stop</span>	<span class="op">B</span>	stop</span><span class="cl" data-n="33">	<span class="dr">END</span></span><span class="cl" data-n="34"> </span></pre></div></div>
+</article></section><section class="sec" id="dev"><div class="sec-h"><h2>Switches, LEDs, displays</h2><p>pull resistors, polling, seven-segment, keypad</p></div>
+<article class="card" id="q07">
+  <header class="card-h">
+    <span class="num">W6·07</span>
+    <h3>Pull resistors, LEDs and pin types</h3>
+    <span class="kind k-concept">Concept</span>
+    <label class="done"><input type="checkbox" id="done-07" data-done="7"><span>Solved</span></label>
+  </header>
+  <div class="q"><ol class='parts'><li>A push button connects PB2 to <b>ground</b> when pressed. Which internal resistor do you enable, and what does PB2 read when the button is pressed and when it's released?</li><li>The same button, but it connects PB2 to <b>3.3 V</b>.</li><li>An LED's anode goes to 3.3 V through a resistor and its cathode to PF2. Is the pin sourcing or sinking current, and what do you write to turn the LED on?</li><li>What happens to an input pin with no pull resistor when the button is open?</li><li>Several devices share one line (as in I²C). Why must their pins be open-drain, and what makes the line 1?</li><li>What does the Schmitt trigger on an input do for a slow or noisy signal?</li></ol></div>
+  <div class="btns">
+    <button type="button" class="reveal" data-target="h7" aria-expanded="false">Hint</button>
+    <button type="button" class="reveal" data-target="s7" aria-expanded="false">Solution</button>
+    
+  </div>
+  
+  <div class="hint" id="h7" hidden><span class="tag">Hint</span> With the button open, only the resistor decides the level. Think about which way current flows through the LED.</div>
+  <div class="sol" id="s7" hidden><div class="tw"><table><thead><tr><th>Part</th><th>Resistor</th><th>Reads</th></tr></thead><tbody><tr><td>a</td><td>Pull-<b>up</b> (GPIOPUR)</td><td>Pressed: 0, released: 1 ("negative logic")</td></tr><tr><td>b</td><td>Pull-<b>down</b> (GPIOPDR)</td><td>Pressed: 1, released: 0</td></tr></tbody></table></div><p><b>c)</b> Current flows from 3.3 V through the LED <i>into</i> the pin, so the pin <b>sinks</b> current (common-anode style). Write <b>0</b> to turn it on, 1 to turn it off.</p><p><b>d)</b> It <b>floats</b>: nothing sets its level, so it can read 0 or 1 at random and pick up noise.</p><p><b>e)</b> An open-drain pin can only pull the line to 0 or let go (high impedance). If two push-pull pins drove 1 and 0 at once, they would short. With open-drain any device can pull the line low safely, and a <b>pull-up resistor</b> makes it 1 when nobody pulls.</p><p><b>f)</b> It uses two thresholds (VT+ to switch to 1, VT− to switch back to 0), so a signal wobbling around one level doesn't toggle the input many times.</p></div>
+</article>
+<article class="card" id="q08">
+  <header class="card-h">
+    <span class="num">W6·08</span>
+    <h3>Which switch is pressed? (polling)</h3>
+    <span class="kind k-code">Code</span>
+    <label class="done"><input type="checkbox" id="done-08" data-done="8"><span>Solved</span></label>
+  </header>
+  <div class="q"><p>Four switches are on PB3–PB0 with pull-downs (pressed = 1); PB7–PB4 are outputs used by other code. Write <code>READSW</code>: return in R0 the number of the <b>lowest</b> pressed switch, 1 for PB0 up to 4 for PB3, or 0 if none is pressed. Read only PB3–PB0, through their masked address.</p><p>In the simulator, click the input pins under Port B to press switches, then Run.</p></div>
+  <div class="btns">
+    <button type="button" class="reveal" data-target="h8" aria-expanded="false">Hint</button>
+    <button type="button" class="reveal" data-target="s8" aria-expanded="false">Solution</button>
+    <button type="button" class="reveal simbtn" data-target="sim8" aria-expanded="false">Simulator</button>
+  </div>
+  <div class="sim" id="sim8" data-n="8" hidden></div>
+  <div class="hint" id="h8" hidden><span class="tag">Hint</span> Load from the address with mask 0x0F, so PB7–PB4 always read 0. Then shift right with LSRS until a 1 falls into the carry, counting the shifts.</div>
+  <div class="sol" id="s8" hidden><p>The masked address 0x4000503C returns only bits 3–0, so the outputs on PB7–PB4 can't confuse the test (one of the checks has them at 1). If nothing is pressed, <code>CBZ</code> skips the loop. Otherwise each <code>LSRS</code> moves the lowest bit into C, and the loop stops at the first 1. This is the slides' polling example (slide 70) turned into a subroutine; a main loop would call it until R0 ≠ 0.</p><div class="code"><div class="codebar"><span class="codename">Solution</span><button class="copy" type="button" data-copy>Copy</button></div><pre class="lnum" data-addr><span class="cl" data-n=" 1"><span class="cm">; Port B is already set up: PB3-PB0 inputs with pull-downs (pressed = 1).</span></span><span class="cl" data-n=" 2"><span class="lb">PB_SW</span>	<span class="dr">EQU</span>	0x4000503C		<span class="cm">; bits 9:2 = 0000 1111 -&gt; PB3-PB0 only</span></span><span class="cl" data-n=" 3"> </span><span class="cl" data-n=" 4">	<span class="dr">AREA</span>	main, CODE, READONLY</span><span class="cl" data-n=" 5">	<span class="dr">THUMB</span></span><span class="cl" data-n=" 6">	<span class="dr">EXPORT</span>	__main</span><span class="cl" data-n=" 7"><span class="lb">__main</span></span><span class="cl" data-n=" 8">	<span class="op">BL</span>	READSW</span><span class="cl" data-n=" 9"><span class="lb">stop</span>	<span class="op">B</span>	stop</span><span class="cl" data-n="10"> </span><span class="cl" data-n="11"><span class="cm">; READSW: R0 = number (1-4) of the lowest pressed switch, 0 if none</span></span><span class="cl" data-n="12"><span class="lb">READSW</span>	<span class="op">PUSH</span>	{<span class="rg">R1</span>, <span class="rg">R2</span>}</span><span class="cl" data-n="13">	<span class="op">LDR</span>	<span class="rg">R1</span>, =PB_SW</span><span class="cl" data-n="14">	<span class="op">LDR</span>	<span class="rg">R2</span>, [<span class="rg">R1</span>]		<span class="cm">; only bits 3-0 can be 1</span></span><span class="cl" data-n="15">	<span class="op">MOV</span>	<span class="rg">R0</span>, <span class="im">#0</span></span><span class="cl" data-n="16">	<span class="op">CBZ</span>	<span class="rg">R2</span>, rs_done		<span class="cm">; nothing pressed</span></span><span class="cl" data-n="17"><span class="lb">rs_loop</span>	<span class="op">ADD</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#1</span></span><span class="cl" data-n="18">	<span class="op">LSRS</span>	<span class="rg">R2</span>, <span class="rg">R2</span>, <span class="im">#1</span>		<span class="cm">; lowest bit goes into C</span></span><span class="cl" data-n="19">	<span class="op">BCC</span>	rs_loop</span><span class="cl" data-n="20"><span class="lb">rs_done</span>	<span class="op">POP</span>	{<span class="rg">R1</span>, <span class="rg">R2</span>}</span><span class="cl" data-n="21">	<span class="op">BX</span>	<span class="rg">LR</span></span><span class="cl" data-n="22">	<span class="dr">END</span></span><span class="cl" data-n="23"> </span></pre></div></div>
+</article>
+<article class="card" id="q09">
+  <header class="card-h">
+    <span class="num">W6·09</span>
+    <h3>Seven-segment display</h3>
+    <span class="kind k-code">Code</span>
+    <label class="done"><input type="checkbox" id="done-09" data-done="9"><span>Solved</span></label>
+  </header>
+  <div class="q"><p>A common-cathode seven-segment display is connected to PB6–PB0: PB0 = segment a, … , PB6 = segment g, and 1 lights a segment. PB7 drives an LED that belongs to other code. The table <code>SEGS</code> in the starter holds the patterns for 0–9.</p><ol class='parts'><li>Write <code>SHOWDIG</code>: show the digit in R0 (0–9) without changing PB7.</li><li>How would the code change for a <b>common-anode</b> display?</li></ol></div>
+  <div class="btns">
+    <button type="button" class="reveal" data-target="h9" aria-expanded="false">Hint</button>
+    <button type="button" class="reveal" data-target="s9" aria-expanded="false">Solution</button>
+    <button type="button" class="reveal simbtn" data-target="sim9" aria-expanded="false">Simulator</button>
+  </div>
+  <div class="sim" id="sim9" data-n="9" hidden></div>
+  <div class="hint" id="h9" hidden><span class="tag">Hint</span> LDRB with [table, R0] fetches the byte for digit R0. To keep PB7, store through the GPIODATA address whose mask is 0111 1111.</div>
+  <div class="sol" id="s9" hidden><p><b>a)</b> The mask 0x7F gives the address 0x40005000 + 0x1FC = <b>0x400051FC</b>, so a plain STR changes PB6–PB0 only. <code>LDRB R2, [R1, R0]</code> reads byte R0 of the table, with no scaling, because each entry is one byte.</p><p><b>b)</b> In a common-anode display the segments light when the pin is 0, so invert the pattern before storing: <code>EOR R2, R2, #0x7F</code>.</p><div class="code"><div class="codebar"><span class="codename">Solution</span><button class="copy" type="button" data-copy>Copy</button></div><pre class="lnum" data-addr><span class="cl" data-n=" 1"><span class="cm">; Port B is already set up: PB7-PB0 outputs. PB6-PB0 drive segments g..a (1 = on).</span></span><span class="cl" data-n=" 2"><span class="lb">PB_SEG</span>	<span class="dr">EQU</span>	0x400051FC		<span class="cm">; bits 9:2 = 0111 1111 -&gt; PB6-PB0 only</span></span><span class="cl" data-n=" 3"> </span><span class="cl" data-n=" 4">	<span class="dr">AREA</span>	tables, DATA, READONLY</span><span class="cl" data-n=" 5"><span class="lb">SEGS</span>	<span class="dr">DCB</span>	0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F</span><span class="cl" data-n=" 6"> </span><span class="cl" data-n=" 7">	<span class="dr">AREA</span>	main, CODE, READONLY</span><span class="cl" data-n=" 8">	<span class="dr">THUMB</span></span><span class="cl" data-n=" 9">	<span class="dr">EXPORT</span>	__main</span><span class="cl" data-n="10"><span class="lb">__main</span></span><span class="cl" data-n="11">	<span class="op">MOV</span>	<span class="rg">R0</span>, <span class="im">#7</span></span><span class="cl" data-n="12">	<span class="op">BL</span>	SHOWDIG</span><span class="cl" data-n="13"><span class="lb">stop</span>	<span class="op">B</span>	stop</span><span class="cl" data-n="14"> </span><span class="cl" data-n="15"><span class="cm">; SHOWDIG: show digit R0 (0-9); PB7 must not change</span></span><span class="cl" data-n="16"><span class="lb">SHOWDIG</span>	<span class="op">PUSH</span>	{<span class="rg">R1</span>, <span class="rg">R2</span>}</span><span class="cl" data-n="17">	<span class="op">LDR</span>	<span class="rg">R1</span>, =SEGS</span><span class="cl" data-n="18">	<span class="op">LDRB</span>	<span class="rg">R2</span>, [<span class="rg">R1</span>, <span class="rg">R0</span>]		<span class="cm">; pattern for this digit</span></span><span class="cl" data-n="19">	<span class="op">LDR</span>	<span class="rg">R1</span>, =PB_SEG</span><span class="cl" data-n="20">	<span class="op">STR</span>	<span class="rg">R2</span>, [<span class="rg">R1</span>]		<span class="cm">; PB7 is outside the mask</span></span><span class="cl" data-n="21">	<span class="op">POP</span>	{<span class="rg">R1</span>, <span class="rg">R2</span>}</span><span class="cl" data-n="22">	<span class="op">BX</span>	<span class="rg">LR</span></span><span class="cl" data-n="23">	<span class="dr">END</span></span><span class="cl" data-n="24"> </span></pre></div></div>
+</article>
+<article class="card" id="q10">
+  <header class="card-h">
+    <span class="num">W6·10</span>
+    <h3>Scan a keypad</h3>
+    <span class="kind k-code">Code</span>
+    <label class="done"><input type="checkbox" id="done-10" data-done="10"><span>Solved</span></label>
+  </header>
+  <div class="q"><p>A 4×3 keypad (slides 52–61) has its rows on PD3–PD0 (outputs) and its columns on PD6–PD4 (inputs with pull-ups). Pressing a key connects its row to its column. Keys are numbered row by row: 1 2 3 / 4 5 6 / 7 8 9 / * 0 #, so row r (0–3) and column c (0–2) give the code 3r + c.</p><p>Write <code>KEYSCAN</code>: drive one row low at a time (the others high), read the columns, and return R0 = 3r + c for the pressed key, or 0xFF if none. Before returning, drive all rows low again, so a key press can be detected (slide 60). Assume at most one key is pressed.</p><p>In the simulator, click a key on the keypad, then Run.</p></div>
+  <div class="btns">
+    <button type="button" class="reveal" data-target="h10" aria-expanded="false">Hint</button>
+    <button type="button" class="reveal" data-target="s10" aria-expanded="false">Solution</button>
+    <button type="button" class="reveal simbtn" data-target="sim10" aria-expanded="false">Simulator</button>
+  </div>
+  <div class="sim" id="sim10" data-n="10" hidden></div>
+  <div class="hint" id="h10" hidden><span class="tag">Hint</span> The row pattern is 1 &lt;&lt; r, inverted in its low 4 bits (EOR #0x0F). The columns read 1 unless pressed; shift them down by 4 and invert them with EOR #0x07, so the pressed column becomes a 1 bit.</div>
+  <div class="sol" id="s10" hidden><p>For each row r: write ~(1 &lt;&lt; r) to the rows through 0x4000703C (mask 0x0F), then read the columns through 0x400071C0 (mask 0x70). Only the column of a key in the low row reads 0. After <code>LSR #4</code> and <code>EOR #0x07</code>, a non-zero value means "found", and the position of its 1 bit is the column. <code>ADD R0, R0, R3, LSL #1</code> plus <code>ADD R0, R0, R3</code> adds 3r without a multiply.</p><p>Pressing two keys in different rows of the same column would connect a high row to a low row through the keys (slide 61's short circuit); real designs add diodes or use open-drain rows. See also: Zhu, <i>Embedded Systems with ARM Cortex-M Microcontrollers</i>, section 14.9 (keypad scan).</p><div class="code"><div class="codebar"><span class="codename">Solution</span><button class="copy" type="button" data-copy>Copy</button></div><pre class="lnum" data-addr><span class="cl" data-n=" 1"><span class="cm">; Port D is already set up: PD3-PD0 = rows 1-4 (outputs),</span></span><span class="cl" data-n=" 2"><span class="cm">; PD6-PD4 = columns 1-3 (inputs with pull-ups).</span></span><span class="cl" data-n=" 3"><span class="lb">KP_ROWS</span>	<span class="dr">EQU</span>	0x4000703C		<span class="cm">; PD3-PD0 only</span></span><span class="cl" data-n=" 4"><span class="lb">KP_COLS</span>	<span class="dr">EQU</span>	0x400071C0		<span class="cm">; PD6-PD4 only</span></span><span class="cl" data-n=" 5"> </span><span class="cl" data-n=" 6">	<span class="dr">AREA</span>	main, CODE, READONLY</span><span class="cl" data-n=" 7">	<span class="dr">THUMB</span></span><span class="cl" data-n=" 8">	<span class="dr">EXPORT</span>	__main</span><span class="cl" data-n=" 9"><span class="lb">__main</span></span><span class="cl" data-n="10">	<span class="op">BL</span>	KEYSCAN</span><span class="cl" data-n="11"><span class="lb">stop</span>	<span class="op">B</span>	stop</span><span class="cl" data-n="12"> </span><span class="cl" data-n="13"><span class="cm">; KEYSCAN: R0 = 3 * row + column (rows 0-3, columns 0-2), or 0xFF if no key</span></span><span class="cl" data-n="14"><span class="lb">KEYSCAN</span>	<span class="op">PUSH</span>	{<span class="rg">R1</span>-<span class="rg">R5</span>}</span><span class="cl" data-n="15">	<span class="op">LDR</span>	<span class="rg">R1</span>, =KP_ROWS</span><span class="cl" data-n="16">	<span class="op">LDR</span>	<span class="rg">R2</span>, =KP_COLS</span><span class="cl" data-n="17">	<span class="op">MOV</span>	<span class="rg">R3</span>, <span class="im">#0</span>			<span class="cm">; row index</span></span><span class="cl" data-n="18"><span class="lb">ks_row</span>	<span class="op">MOV</span>	<span class="rg">R4</span>, <span class="im">#1</span></span><span class="cl" data-n="19">	<span class="op">LSL</span>	<span class="rg">R4</span>, <span class="rg">R4</span>, <span class="rg">R3</span>		<span class="cm">; 1 &lt;&lt; row</span></span><span class="cl" data-n="20">	<span class="op">EOR</span>	<span class="rg">R4</span>, <span class="rg">R4</span>, <span class="im">#0x0F</span>		<span class="cm">; this row 0, the others 1</span></span><span class="cl" data-n="21">	<span class="op">STR</span>	<span class="rg">R4</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="22">	<span class="op">LDR</span>	<span class="rg">R5</span>, [<span class="rg">R2</span>]		<span class="cm">; columns in bits 6-4</span></span><span class="cl" data-n="23">	<span class="op">LSR</span>	<span class="rg">R5</span>, <span class="rg">R5</span>, <span class="im">#4</span></span><span class="cl" data-n="24">	<span class="op">EOR</span>	<span class="rg">R5</span>, <span class="rg">R5</span>, <span class="im">#0x07</span>		<span class="cm">; a pressed column now reads 1</span></span><span class="cl" data-n="25">	<span class="op">CBNZ</span>	<span class="rg">R5</span>, ks_found</span><span class="cl" data-n="26">	<span class="op">ADD</span>	<span class="rg">R3</span>, <span class="rg">R3</span>, <span class="im">#1</span></span><span class="cl" data-n="27">	<span class="op">CMP</span>	<span class="rg">R3</span>, <span class="im">#4</span></span><span class="cl" data-n="28">	<span class="op">BLO</span>	ks_row</span><span class="cl" data-n="29">	<span class="op">MOV</span>	<span class="rg">R0</span>, <span class="im">#0xFF</span>		<span class="cm">; no key in any row</span></span><span class="cl" data-n="30">	<span class="op">B</span>	ks_done</span><span class="cl" data-n="31"><span class="lb">ks_found</span></span><span class="cl" data-n="32">	<span class="op">MOV</span>	<span class="rg">R0</span>, <span class="im">#0</span>			<span class="cm">; column = position of the 1 bit</span></span><span class="cl" data-n="33"><span class="lb">ks_col</span>	<span class="op">LSRS</span>	<span class="rg">R5</span>, <span class="rg">R5</span>, <span class="im">#1</span></span><span class="cl" data-n="34">	<span class="op">BCS</span>	ks_got</span><span class="cl" data-n="35">	<span class="op">ADD</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#1</span></span><span class="cl" data-n="36">	<span class="op">B</span>	ks_col</span><span class="cl" data-n="37"><span class="lb">ks_got</span>	<span class="op">ADD</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="rg">R3</span>, LSL <span class="im">#1</span>	<span class="cm">; + 2 * row</span></span><span class="cl" data-n="38">	<span class="op">ADD</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="rg">R3</span>		<span class="cm">; + row</span></span><span class="cl" data-n="39"><span class="lb">ks_done</span>	<span class="op">MOV</span>	<span class="rg">R4</span>, <span class="im">#0</span>			<span class="cm">; all rows low again (for the key interrupt)</span></span><span class="cl" data-n="40">	<span class="op">STR</span>	<span class="rg">R4</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="41">	<span class="op">POP</span>	{<span class="rg">R1</span>-<span class="rg">R5</span>}</span><span class="cl" data-n="42">	<span class="op">BX</span>	<span class="rg">LR</span></span><span class="cl" data-n="43">	<span class="dr">END</span></span><span class="cl" data-n="44"> </span></pre></div></div>
+</article></section><section class="sec" id="gint"><div class="sec-h"><h2>GPIO interrupts</h2><p>IS, IBE, IEV, IM, RIS/MIS, ICR and the NVIC</p></div>
+<article class="card" id="q11">
+  <header class="card-h">
+    <span class="num">W6·11</span>
+    <h3>Pick the interrupt settings</h3>
+    <span class="kind k-concept">Concept</span>
+    <label class="done"><input type="checkbox" id="done-11" data-done="11"><span>Solved</span></label>
+  </header>
+  <div class="q"><p>For each case give the bit values for the pin in GPIOIS, GPIOIBE and GPIOIEV (write x if the bit doesn't matter).</p><ol class='parts'><li>SW1 on PF4 (pull-up, pressed = 0): interrupt on each press.</li><li>PB2: interrupt on every change, press and release.</li><li>PD1: interrupt as long as the pin is high.</li><li>PB4 with a pull-down (pressed = 1): interrupt on each press.</li><li>For case (a), list everything else that must be set before the CPU actually runs <code>GPIOF_Handler</code>.</li></ol></div>
+  <div class="btns">
+    <button type="button" class="reveal" data-target="h11" aria-expanded="false">Hint</button>
+    <button type="button" class="reveal" data-target="s11" aria-expanded="false">Solution</button>
+    
+  </div>
+  
+  <div class="hint" id="h11" hidden><span class="tag">Hint</span> IS: 0 = edge, 1 = level. IBE = 1 means both edges and makes IEV irrelevant. IEV: 1 = rising edge or high level, 0 = falling edge or low level.</div>
+  <div class="sol" id="s11" hidden><div class="tw"><table><thead><tr><th>Part</th><th>IS</th><th>IBE</th><th>IEV</th><th>Meaning</th></tr></thead><tbody><tr><td>a</td><td>0</td><td>0</td><td>0</td><td>falling edge</td></tr><tr><td>b</td><td>0</td><td>1</td><td>x</td><td>both edges</td></tr><tr><td>c</td><td>1</td><td>x</td><td>1</td><td>high level</td></tr><tr><td>d</td><td>0</td><td>0</td><td>1</td><td>rising edge</td></tr></tbody></table></div><p><b>e)</b> The full chain from Week 5's slide 45:</p><ol><li>GPIOICR bit 4 = 1, to clear an old flag.</li><li>GPIOIM bit 4 = 1, so PF4's flag reaches the NVIC.</li><li>NVIC: Port F is IRQ 30, so ISER0 bit 30 (and its priority in IPR7, byte 2).</li><li>PRIMASK = 0 (<code>CPSIE I</code>).</li></ol><p>Port B is IRQ 1. The whole port shares one IRQ, so the handler must check which pin caused it.</p></div>
+</article>
+<article class="card" id="q12">
+  <header class="card-h">
+    <span class="num">W6·12</span>
+    <h3>Interrupt on SW1</h3>
+    <span class="kind k-code">Code</span>
+    <label class="done"><input type="checkbox" id="done-12" data-done="12"><span>Solved</span></label>
+  </header>
+  <div class="q"><p>Port F is already set up with PF4 as an input with pull-up. Configure a <b>falling-edge</b> interrupt on PF4, clear any old flag, unmask it, enable IRQ 30 in the NVIC with priority <b>2</b>, and finally switch interrupts on globally. Don't change other pins' bits in GPIOIS, IBE, IEV or IM.</p></div>
+  <div class="btns">
+    <button type="button" class="reveal" data-target="h12" aria-expanded="false">Hint</button>
+    <button type="button" class="reveal" data-target="s12" aria-expanded="false">Solution</button>
+    <button type="button" class="reveal simbtn" data-target="sim12" aria-expanded="false">Simulator</button>
+  </div>
+  <div class="sim" id="sim12" data-n="12" hidden></div>
+  <div class="hint" id="h12" hidden><span class="tag">Hint</span> Clear the flag before unmasking, otherwise an old flag interrupts at once. For the NVIC part, reuse Week 5: ISER0 bit 30, and IPR7 byte 2 with priority 2 &lt;&lt; 5.</div>
+  <div class="sol" id="s12" hidden><p>IS, IBE and IEV: BIC bit 4 (edge, one edge, falling). ICR: a plain store of 0x10 is enough, because writing 0 to ICR has no effect. IM: ORR 0x10. IPR7 byte 2 = 0x40, so 0x11223344 becomes 0x11403344. ISER0 = 0x40000000. Then <code>CPSIE I</code>.</p><p>See also: Valvano, Program 9.4 (an edge-triggered PF4 interrupt that counts presses).</p><div class="code"><div class="codebar"><span class="codename">Solution</span><button class="copy" type="button" data-copy>Copy</button></div><pre class="lnum" data-addr><span class="cl" data-n=" 1"><span class="cm">; Port F is already set up: PF4 input with pull-up (SW1, pressed = 0).</span></span><span class="cl" data-n=" 2"><span class="lb">GPIO_PORTF_IS</span>	<span class="dr">EQU</span>	0x40025404</span><span class="cl" data-n=" 3"><span class="lb">GPIO_PORTF_IBE</span>	<span class="dr">EQU</span>	0x40025408</span><span class="cl" data-n=" 4"><span class="lb">GPIO_PORTF_IEV</span>	<span class="dr">EQU</span>	0x4002540C</span><span class="cl" data-n=" 5"><span class="lb">GPIO_PORTF_IM</span>	<span class="dr">EQU</span>	0x40025410</span><span class="cl" data-n=" 6"><span class="lb">GPIO_PORTF_ICR</span>	<span class="dr">EQU</span>	0x4002541C</span><span class="cl" data-n=" 7"><span class="lb">NVIC_EN0</span>	<span class="dr">EQU</span>	0xE000E100</span><span class="cl" data-n=" 8"><span class="lb">NVIC_PRI7</span>	<span class="dr">EQU</span>	0xE000E41C</span><span class="cl" data-n=" 9"> </span><span class="cl" data-n="10">	<span class="dr">AREA</span>	main, CODE, READONLY</span><span class="cl" data-n="11">	<span class="dr">THUMB</span></span><span class="cl" data-n="12">	<span class="dr">EXPORT</span>	__main</span><span class="cl" data-n="13"><span class="lb">__main</span></span><span class="cl" data-n="14">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTF_IS	<span class="cm">; edge-sensitive</span></span><span class="cl" data-n="15">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="16">	<span class="op">BIC</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x10</span></span><span class="cl" data-n="17">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="18">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTF_IBE	<span class="cm">; one edge only</span></span><span class="cl" data-n="19">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="20">	<span class="op">BIC</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x10</span></span><span class="cl" data-n="21">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="22">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTF_IEV	<span class="cm">; falling edge (press)</span></span><span class="cl" data-n="23">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="24">	<span class="op">BIC</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x10</span></span><span class="cl" data-n="25">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="26">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTF_ICR	<span class="cm">; clear an old flag first</span></span><span class="cl" data-n="27">	<span class="op">MOV</span>	<span class="rg">R0</span>, <span class="im">#0x10</span></span><span class="cl" data-n="28">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="29">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTF_IM	<span class="cm">; then unmask PF4</span></span><span class="cl" data-n="30">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="31">	<span class="op">ORR</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x10</span></span><span class="cl" data-n="32">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="33">	<span class="op">LDR</span>	<span class="rg">R1</span>, =NVIC_PRI7		<span class="cm">; IRQ 30: IPR7, byte 2</span></span><span class="cl" data-n="34">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="35">	<span class="op">BIC</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x00FF0000</span></span><span class="cl" data-n="36">	<span class="op">ORR</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x00400000</span>	<span class="cm">; priority 2 -&gt; 2 &lt;&lt; 5 = 0x40</span></span><span class="cl" data-n="37">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="38">	<span class="op">LDR</span>	<span class="rg">R1</span>, =NVIC_EN0		<span class="cm">; IRQ 30: ISER0, bit 30</span></span><span class="cl" data-n="39">	<span class="op">MOV</span>	<span class="rg">R0</span>, <span class="im">#0x40000000</span></span><span class="cl" data-n="40">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="41">	<span class="op">CPSIE</span>	I			<span class="cm">; interrupts on globally</span></span><span class="cl" data-n="42"><span class="lb">stop</span>	<span class="op">B</span>	stop</span><span class="cl" data-n="43">	<span class="dr">END</span></span><span class="cl" data-n="44"> </span></pre></div></div>
+</article>
+<article class="card" id="q13">
+  <header class="card-h">
+    <span class="num">W6·13</span>
+    <h3>One handler for two switches</h3>
+    <span class="kind k-code">Code</span>
+    <label class="done"><input type="checkbox" id="done-13" data-done="13"><span>Solved</span></label>
+  </header>
+  <div class="q"><p>SW1 (PF4) and SW2 (PF0) both have falling-edge interrupts, so both use <code>GPIOF_Handler</code>. Write the handler: SW1 toggles the red LED (PF1), SW2 toggles the green LED (PF3), and both can be pending at once. Blue (PF2) must not change.</p><ul><li>Find the source with <b>GPIOMIS</b>, so masked pins are ignored.</li><li>Clear only the flags you handled.</li><li>R0–R3 and R12 are free (the hardware saves them on entry); keep R4–R11.</li></ul></div>
+  <div class="btns">
+    <button type="button" class="reveal" data-target="h13" aria-expanded="false">Hint</button>
+    <button type="button" class="reveal" data-target="s13" aria-expanded="false">Solution</button>
+    <button type="button" class="reveal simbtn" data-target="sim13" aria-expanded="false">Simulator</button>
+  </div>
+  <div class="sim" id="sim13" data-n="13" hidden></div>
+  <div class="hint" id="h13" hidden><span class="tag">Hint</span> Read MIS into a register and keep it: TST each bit, EOR the LED bits, write the LEDs through the PF3/PF1 masked address, and finally store the MIS value into ICR.</div>
+  <div class="sol" id="s13" hidden><p>Reading MIS gives exactly the unmasked pins that interrupted. Writing that same value to ICR clears those flags and nothing else, so a flag of a masked pin (PF2 in the last check) stays set. Without clearing, the handler would run again right after returning, forever (slide 72).</p><p>Toggling through 0x40025028 (PF3 and PF1 only) means blue can't change, even though R2 also holds other bits. This is a <i>polled</i> interrupt inside a <i>vectored</i> system: the port has one vector, and the handler polls which pin it was.</p><div class="code"><div class="codebar"><span class="codename">Solution</span><button class="copy" type="button" data-copy>Copy</button></div><pre class="lnum" data-addr><span class="cl" data-n=" 1"><span class="cm">; Port F: PF3-PF1 LEDs (outputs), PF4 = SW1 and PF0 = SW2 (falling-edge interrupts).</span></span><span class="cl" data-n=" 2"><span class="lb">GPIO_PORTF_MIS</span>	<span class="dr">EQU</span>	0x40025418</span><span class="cl" data-n=" 3"><span class="lb">GPIO_PORTF_ICR</span>	<span class="dr">EQU</span>	0x4002541C</span><span class="cl" data-n=" 4"><span class="lb">PF_RG</span>	<span class="dr">EQU</span>	0x40025028		<span class="cm">; PF3 and PF1 only</span></span><span class="cl" data-n=" 5"> </span><span class="cl" data-n=" 6">	<span class="dr">AREA</span>	main, CODE, READONLY</span><span class="cl" data-n=" 7">	<span class="dr">THUMB</span></span><span class="cl" data-n=" 8">	<span class="dr">EXPORT</span>	__main</span><span class="cl" data-n=" 9"><span class="lb">__main</span></span><span class="cl" data-n="10">	<span class="op">BL</span>	GPIOF_Handler		<span class="cm">; (in a real program the NVIC calls it)</span></span><span class="cl" data-n="11"><span class="lb">stop</span>	<span class="op">B</span>	stop</span><span class="cl" data-n="12"> </span><span class="cl" data-n="13"><span class="lb">GPIOF_Handler</span></span><span class="cl" data-n="14">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTF_MIS</span><span class="cl" data-n="15">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]		<span class="cm">; which unmasked pins interrupted</span></span><span class="cl" data-n="16">	<span class="op">LDR</span>	<span class="rg">R1</span>, =PF_RG</span><span class="cl" data-n="17">	<span class="op">LDR</span>	<span class="rg">R2</span>, [<span class="rg">R1</span>]		<span class="cm">; current red and green LEDs</span></span><span class="cl" data-n="18">	<span class="op">TST</span>	<span class="rg">R0</span>, <span class="im">#0x10</span></span><span class="cl" data-n="19">	<span class="op">BEQ</span>	chk_sw2</span><span class="cl" data-n="20">	<span class="op">EOR</span>	<span class="rg">R2</span>, <span class="rg">R2</span>, <span class="im">#0x02</span>		<span class="cm">; SW1: toggle red</span></span><span class="cl" data-n="21"><span class="lb">chk_sw2</span>	<span class="op">TST</span>	<span class="rg">R0</span>, <span class="im">#0x01</span></span><span class="cl" data-n="22">	<span class="op">BEQ</span>	write_leds</span><span class="cl" data-n="23">	<span class="op">EOR</span>	<span class="rg">R2</span>, <span class="rg">R2</span>, <span class="im">#0x08</span>		<span class="cm">; SW2: toggle green</span></span><span class="cl" data-n="24"><span class="lb">write_leds</span></span><span class="cl" data-n="25">	<span class="op">STR</span>	<span class="rg">R2</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="26">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTF_ICR</span><span class="cl" data-n="27">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]		<span class="cm">; clear exactly the flags handled</span></span><span class="cl" data-n="28">	<span class="op">BX</span>	<span class="rg">LR</span></span><span class="cl" data-n="29">	<span class="dr">END</span></span><span class="cl" data-n="30"> </span></pre></div></div>
+</article>
+<article class="card" id="q14">
+  <header class="card-h">
+    <span class="num">W6·14</span>
+    <h3>Interrupt pitfalls</h3>
+    <span class="kind k-concept">Concept</span>
+    <label class="done"><input type="checkbox" id="done-14" data-done="14"><span>Solved</span></label>
+  </header>
+  <div class="q"><ol class='parts'><li>An edge-triggered GPIO handler forgets to write GPIOICR. What happens after it returns?</li><li>A button is set up as a <b>level</b> interrupt (low level) and held down for one second. What happens, and why is edge-triggering better for a button?</li><li>A press counter counts 3 for a single press. What is the cause, and give two ways to fix it.</li><li>Two switches: on PF4 and PF0, or on PF4 and PB0. How does finding the source differ?</li><li>Slide 74's main loop is <code>WFI</code> / <code>B Loop</code>. What does WFI do, and why is it better than an empty loop?</li></ol></div>
+  <div class="btns">
+    <button type="button" class="reveal" data-target="h14" aria-expanded="false">Hint</button>
+    <button type="button" class="reveal" data-target="s14" aria-expanded="false">Solution</button>
+    
+  </div>
+  
+  <div class="hint" id="h14" hidden><span class="tag">Hint</span> Think about RIS: when does it go back to 0 for edge interrupts, and for level interrupts?</div>
+  <div class="sol" id="s14" hidden><p><b>a)</b> RIS stays 1, so the interrupt is still requested. As soon as the handler returns it is entered again, forever, and main never runs again.</p><p><b>b)</b> A level interrupt stays requested as long as the pin is low, so the handler runs again and again for the whole second. An edge interrupt fires once per press.</p><p><b>c)</b> <b>Bouncing</b>: the contacts make and break several times in the first few milliseconds, so one press gives several edges. Fixes: a hardware RC filter (with the Schmitt trigger), or software: after the first edge, ignore the pin for about 10–20 ms (for example clear its IM bit and set it again later from a timer), or check that the level is still the same after a short delay.</p><p><b>d)</b> PF4 and PF0 share Port F's single vector, so one handler must read MIS to see which pin it was (polled, inside the handler). PF4 and PB0 are on different ports with different vectors (IRQ 30 and IRQ 1), so each switch gets its own handler (vectored). See also: Valvano, Example 9.1, which solves the same task both ways.</p><p><b>e)</b> WFI (wait for interrupt) puts the core to sleep until an interrupt arrives, which saves power. An empty loop keeps the CPU busy doing nothing.</p></div>
+</article></section><section class="sec" id="quiz"><div class="sec-h"><h2>Past quiz style</h2><p>a problem in the style of an earlier EE447 quiz</p></div>
+<article class="card" id="q15">
+  <header class="card-h">
+    <span class="num">W6·15</span>
+    <h3>Switch and LED on Port B</h3>
+    <span class="kind k-code">Code</span>
+    <label class="done"><input type="checkbox" id="done-15" data-done="15"><span>Solved</span></label>
+  </header>
+  <div class="q"><p>In the style of an earlier EE447 quiz (the wording here is mine). A push button connects <b>PB4</b> to the supply when pressed, so the pin needs a <b>pull-down</b>, and an LED is driven by <b>PB5</b>. Set up both pins for interrupt-driven I/O. Change only these two pins' bits, and only Port B's clock bit.</p><ol><li>Clock for Port B.</li><li>PB5 and PB4: analog off, digital on, PCTL nibbles cleared, alternate function off.</li><li>PB4 input, PB5 output.</li><li>Pull-down on PB4, pull-up off.</li><li>PB4 interrupt: edge-sensitive, one edge, rising (a press), old flag cleared, unmasked.</li></ol><p>The starter code has the steps as comments; fill in the code under each one.</p></div>
+  <div class="btns">
+    <button type="button" class="reveal" data-target="h15" aria-expanded="false">Hint</button>
+    <button type="button" class="reveal" data-target="s15" aria-expanded="false">Solution</button>
+    <button type="button" class="reveal simbtn" data-target="sim15" aria-expanded="false">Simulator</button>
+  </div>
+  <div class="sim" id="sim15" data-n="15" hidden></div>
+  <div class="hint" id="h15" hidden><span class="tag">Hint</span> Pins 4 and 5 are 0x30; pin 4 alone is 0x10. Their PCTL nibbles are bits 23–16: 0x00FF0000. Pressed = 1 with a pull-down, so a press is a rising edge.</div>
+  <div class="sol" id="s15" hidden><p>Clock: ORR 0x02. AMSEL BIC 0x30, DEN ORR 0x30, PCTL BIC 0x00FF0000, AFSEL BIC 0x30. DIR: BIC 0x10, ORR 0x20. PDR ORR 0x10, PUR BIC 0x10. IS BIC 0x10 (edge), IBE BIC 0x10 (one edge), IEV ORR 0x10 (rising), ICR 0x10 (clear), IM ORR 0x10 (unmask).</p><p>The masked data addresses for this circuit are 0x40005040 for PB4 and 0x40005080 for PB5: mask 0x10 or 0x20, shifted left by 2. To finish, the NVIC needs IRQ 1 enabled (ISER0 bit 1), and the handler must clear ICR bit 4.</p><div class="code"><div class="codebar"><span class="codename">Solution</span><button class="copy" type="button" data-copy>Copy</button></div><pre class="lnum" data-addr><span class="cl" data-n=" 1"><span class="lb">SYSCTL_RCGCGPIO</span>	<span class="dr">EQU</span>	0x400FE608</span><span class="cl" data-n=" 2"><span class="lb">GPIO_PORTB_DIR</span>	<span class="dr">EQU</span>	0x40005400</span><span class="cl" data-n=" 3"><span class="lb">GPIO_PORTB_IS</span>	<span class="dr">EQU</span>	0x40005404</span><span class="cl" data-n=" 4"><span class="lb">GPIO_PORTB_IBE</span>	<span class="dr">EQU</span>	0x40005408</span><span class="cl" data-n=" 5"><span class="lb">GPIO_PORTB_IEV</span>	<span class="dr">EQU</span>	0x4000540C</span><span class="cl" data-n=" 6"><span class="lb">GPIO_PORTB_IM</span>	<span class="dr">EQU</span>	0x40005410</span><span class="cl" data-n=" 7"><span class="lb">GPIO_PORTB_ICR</span>	<span class="dr">EQU</span>	0x4000541C</span><span class="cl" data-n=" 8"><span class="lb">GPIO_PORTB_AFSEL</span>	<span class="dr">EQU</span>	0x40005420</span><span class="cl" data-n=" 9"><span class="lb">GPIO_PORTB_PUR</span>	<span class="dr">EQU</span>	0x40005510</span><span class="cl" data-n="10"><span class="lb">GPIO_PORTB_PDR</span>	<span class="dr">EQU</span>	0x40005514</span><span class="cl" data-n="11"><span class="lb">GPIO_PORTB_DEN</span>	<span class="dr">EQU</span>	0x4000551C</span><span class="cl" data-n="12"><span class="lb">GPIO_PORTB_AMSEL</span>	<span class="dr">EQU</span>	0x40005528</span><span class="cl" data-n="13"><span class="lb">GPIO_PORTB_PCTL</span>	<span class="dr">EQU</span>	0x4000552C</span><span class="cl" data-n="14"> </span><span class="cl" data-n="15">	<span class="dr">AREA</span>	main, CODE, READONLY</span><span class="cl" data-n="16">	<span class="dr">THUMB</span></span><span class="cl" data-n="17">	<span class="dr">EXPORT</span>	__main</span><span class="cl" data-n="18"><span class="lb">__main</span></span><span class="cl" data-n="19">	<span class="cm">; 1) clock for Port B only</span></span><span class="cl" data-n="20">	<span class="op">LDR</span>	<span class="rg">R1</span>, =SYSCTL_RCGCGPIO</span><span class="cl" data-n="21">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="22">	<span class="op">ORR</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x02</span></span><span class="cl" data-n="23">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="24">	<span class="op">NOP</span></span><span class="cl" data-n="25">	<span class="op">NOP</span></span><span class="cl" data-n="26">	<span class="cm">; 2) PB5, PB4: analog off, digital on, plain GPIO</span></span><span class="cl" data-n="27">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTB_AMSEL</span><span class="cl" data-n="28">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="29">	<span class="op">BIC</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x30</span></span><span class="cl" data-n="30">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="31">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTB_DEN</span><span class="cl" data-n="32">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="33">	<span class="op">ORR</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x30</span></span><span class="cl" data-n="34">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="35">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTB_PCTL</span><span class="cl" data-n="36">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="37">	<span class="op">BIC</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x00FF0000</span></span><span class="cl" data-n="38">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="39">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTB_AFSEL</span><span class="cl" data-n="40">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="41">	<span class="op">BIC</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x30</span></span><span class="cl" data-n="42">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="43">	<span class="cm">; 3) PB4 input (switch), PB5 output (LED)</span></span><span class="cl" data-n="44">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTB_DIR</span><span class="cl" data-n="45">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="46">	<span class="op">BIC</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x10</span></span><span class="cl" data-n="47">	<span class="op">ORR</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x20</span></span><span class="cl" data-n="48">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="49">	<span class="cm">; 4) pull-down on PB4, pull-up off</span></span><span class="cl" data-n="50">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTB_PDR</span><span class="cl" data-n="51">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="52">	<span class="op">ORR</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x10</span></span><span class="cl" data-n="53">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="54">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTB_PUR</span><span class="cl" data-n="55">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="56">	<span class="op">BIC</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x10</span></span><span class="cl" data-n="57">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="58">	<span class="cm">; 5) PB4 interrupt: edge, one edge, rising, flag cleared, unmasked</span></span><span class="cl" data-n="59">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTB_IS</span><span class="cl" data-n="60">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="61">	<span class="op">BIC</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x10</span></span><span class="cl" data-n="62">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="63">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTB_IBE</span><span class="cl" data-n="64">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="65">	<span class="op">BIC</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x10</span></span><span class="cl" data-n="66">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="67">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTB_IEV</span><span class="cl" data-n="68">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="69">	<span class="op">ORR</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x10</span></span><span class="cl" data-n="70">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="71">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTB_ICR</span><span class="cl" data-n="72">	<span class="op">MOV</span>	<span class="rg">R0</span>, <span class="im">#0x10</span></span><span class="cl" data-n="73">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="74">	<span class="op">LDR</span>	<span class="rg">R1</span>, =GPIO_PORTB_IM</span><span class="cl" data-n="75">	<span class="op">LDR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="76">	<span class="op">ORR</span>	<span class="rg">R0</span>, <span class="rg">R0</span>, <span class="im">#0x10</span></span><span class="cl" data-n="77">	<span class="op">STR</span>	<span class="rg">R0</span>, [<span class="rg">R1</span>]</span><span class="cl" data-n="78"><span class="lb">stop</span>	<span class="op">B</span>	stop</span><span class="cl" data-n="79">	<span class="dr">END</span></span><span class="cl" data-n="80"> </span></pre></div></div>
+</article></section>
+  <p class="foot">Your "Solved" ticks and the code you write in the simulators are kept in this browser only. In Keil with the lab's Startup.s, starting values in a READWRITE area are not copied into RAM. That matters on the board, not on paper or in the simulator.</p>
+  <p class="foot" style="margin-top:8px;border-top:0;padding-top:0">Written with AI and checked by a student; it may contain mistakes. Not official EE447 material.</p>
+  <p class="foot" style="margin-top:12px;border-top:0;padding-top:0;color:var(--ink);font-weight:600">H. Kerem Aktaş <span style="font-weight:400;color:var(--muted)">·</span> <a href="mailto:hkeremaktas@gmail.com" style="font-weight:400;color:var(--accent)">hkeremaktas@gmail.com</a></p>
+  <p class="foot" style="margin-top:4px;border-top:0;padding-top:0">Last updated 11.11.2026 19:05</p>
+</div>
+
+
+<script>(function (root) {
+'use strict';
+const CODE_BASE = 0x00000100, ROM_BASE = 0x00001000, RAM_BASE = 0x20002000, SP_INIT = 0x20000400;
+class AsmError extends Error {}
+class RunError extends Error {}
+const hex = (x, w = 8) => '0x' + (x >>> 0).toString(16).toUpperCase().padStart(w, '0');
+
+const CONDS = ['EQ','NE','CS','HS','CC','LO','MI','PL','VS','VC','HI','LS','GE','LT','GT','LE','AL'];
+const CONDSET = new Set(CONDS);
+function condPass(c, f) {
+  switch (c) {
+    case 'EQ': return f.Z === 1; case 'NE': return f.Z === 0;
+    case 'CS': case 'HS': return f.C === 1; case 'CC': case 'LO': return f.C === 0;
+    case 'MI': return f.N === 1; case 'PL': return f.N === 0;
+    case 'VS': return f.V === 1; case 'VC': return f.V === 0;
+    case 'HI': return f.C === 1 && f.Z === 0; case 'LS': return f.C === 0 || f.Z === 1;
+    case 'GE': return f.N === f.V; case 'LT': return f.N !== f.V;
+    case 'GT': return f.Z === 0 && f.N === f.V; case 'LE': return f.Z === 1 || f.N !== f.V;
+    default: return true;
+  }
+}
+const LDM_MODE = { LDM:'IA', LDMIA:'IA', LDMFD:'IA', LDMIB:'IB', LDMED:'IB', LDMDA:'DA', LDMFA:'DA', LDMDB:'DB', LDMEA:'DB',
+                   STM:'IA', STMIA:'IA', STMEA:'IA', STMIB:'IB', STMFA:'IB', STMDA:'DA', STMED:'DA', STMDB:'DB', STMFD:'DB' };
+const BASES = ['LDRSB','LDRSH','LDRB','LDRH','LDRD','LDR','STRB','STRH','STRD','STR', ...Object.keys(LDM_MODE),
+  'PUSH','POP','MOVW','MOVT','MOV32','MOV','MVN','ADR','ADDW','ADD','ADC','SUBW','SUB','SBC','RSB',
+  'MUL','MLA','MLS','UMULL','SMULL','UMLAL','SMLAL','UDIV','SDIV','AND','ORR','EOR','BIC','ORN',
+  'LSL','LSR','ASR','ROR','RRX','BFC','BFI','UBFX','SBFX','CLZ','RBIT','REV16','REVSH','REV',
+  'SXTB','SXTH','UXTB','UXTH','CMP','CMN','TST','TEQ','CBZ','CBNZ','NOP','WFI','WFE','MRS','MSR','CPSID','CPSIE'].sort((a, b) => b.length - a.length);
+const S_OK = new Set(['MOV','MVN','ADD','ADC','SUB','SBC','RSB','MUL','MLA','UMULL','SMULL','UMLAL','SMLAL','AND','ORR','EOR','BIC','ORN','LSL','LSR','ASR','ROR','RRX']);
+const DIRECTIVES = new Set(['AREA','THUMB','EXPORT','IMPORT','EXTERN','GLOBAL','ENTRY','END','ALIGN','PROC','ENDP','FUNCTION','ENDFUNC','EQU','RN','DCB','DCW','DCD','DCDU','DCQ','SPACE','FILL','PRESERVE8','REQUIRE8','INCLUDE','GET']);
+
+function parseMnemonic(tok) {
+  let m = String(tok).toUpperCase();
+  const dot = m.indexOf('.');
+  if (dot >= 0) { const q = m.slice(dot + 1); m = m.slice(0, dot); if (q !== 'W' && q !== 'N') return null; }
+  if (m === 'B' || m === 'BL' || m === 'BX' || m === 'BLX') return { op: m, s: false, cond: 'AL' };
+  if (m.length === 3 && m[0] === 'B' && CONDSET.has(m.slice(1))) return { op: 'B', s: false, cond: m.slice(1) };
+  if (m.length === 4 && m.startsWith('BL') && CONDSET.has(m.slice(2))) return { op: 'BL', s: false, cond: m.slice(2) };
+  if (m.length === 4 && m.startsWith('BX') && CONDSET.has(m.slice(2))) return { op: 'BX', s: false, cond: m.slice(2) };
+  if (/^IT[TE]{0,3}$/.test(m)) return { op: 'IT', s: false, cond: 'AL', mask: m.slice(2) };
+  for (const b of BASES) {
+    if (!m.startsWith(b)) continue;
+    let rest = m.slice(b.length), s = false;
+    if (rest.startsWith('S') && S_OK.has(b)) { s = true; rest = rest.slice(1); }
+    if (rest === '') return { op: b, s, cond: 'AL' };
+    if (CONDSET.has(rest)) return { op: b, s, cond: rest };
+  }
+  return null;
+}
+const isDirective = t => DIRECTIVES.has(String(t).toUpperCase());
+
+function stripComment(line) {
+  let q = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (q) { if (ch === '"') q = false; continue; }
+    if (ch === '"') { q = true; continue; }
+    if (ch === "'" && line[i + 2] === "'") { i += 2; continue; }
+    if (ch === ';') return line.slice(0, i);
+  }
+  return line;
+}
+function splitOps(s) {
+  if (!s || !s.trim()) return [];
+  const out = []; let depth = 0, q = false, cur = '';
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i];
+    if (q) { cur += ch; if (ch === '"') q = false; continue; }
+    if (ch === '"') { q = true; cur += ch; continue; }
+    if (ch === "'" && s[i + 2] === "'") { cur += s.slice(i, i + 3); i += 2; continue; }
+    if ('[{('.includes(ch)) depth++;
+    if (']})'.includes(ch)) depth--;
+    if (ch === ',' && depth === 0) { out.push(cur.trim()); cur = ''; continue; }
+    cur += ch;
+  }
+  out.push(cur.trim());
+  return out;
+}
+function classify(raw) {
+  const line = stripComment(raw).replace(/\s+$/, '');
+  if (!line.trim()) return null;
+  const m0 = line.match(/^\s*(\S+)\s*(.*)$/);
+  let t0 = m0[1], rest = m0[2];
+  let label = null, body = line.trim();
+  if (t0.endsWith(':')) { label = t0.slice(0, -1); body = rest; }
+  else if (/^\s/.test(line)) { /* indented: in Keil the first word is an instruction, never a label */ }
+  else {
+    const kind = parseMnemonic(t0) ? 'ins' : isDirective(t0) ? 'dir' : null;
+    const t1 = (rest.match(/^(\S+)/) || [])[1];
+    const t1op = t1 && (parseMnemonic(t1.replace(/,$/, '')) || isDirective(t1));
+    if (!kind) { label = t0; body = rest; }
+    else if (kind === 'dir' && t1op) { label = t0; body = rest; }
+  }
+  body = (body || '').trim();
+  if (!body) return { label, mn: null, args: '' };
+  const mb = body.match(/^(\S+)\s*(.*)$/);
+  return { label, mn: mb[1], args: mb[2].trim() };
+}
+
+function evalExpr(src, sym) {
+  const s = String(src).trim(); let i = 0;
+  const skip = () => { while (i < s.length && /\s/.test(s[i])) i++; };
+  const fail = () => { throw new AsmError(`Can't read the value "${src}"`); };
+  function atom() {
+    skip(); const rest = s.slice(i); let m;
+    if ((m = rest.match(/^0[xX][0-9a-fA-F_]+/))) { i += m[0].length; return parseInt(m[0].slice(2).replace(/_/g, ''), 16); }
+    if ((m = rest.match(/^0[bB][01_]+/))) { i += m[0].length; return parseInt(m[0].slice(2).replace(/_/g, ''), 2); }
+    if ((m = rest.match(/^(\d+)_([0-9a-zA-Z]+)/))) { i += m[0].length; const v = parseInt(m[2], +m[1]); if (isNaN(v)) fail(); return v; }
+    if ((m = rest.match(/^\d+/))) { i += m[0].length; return parseInt(m[0], 10); }
+    if ((m = rest.match(/^'(.)'/))) { i += m[0].length; return m[1].charCodeAt(0); }
+    if ((m = rest.match(/^[A-Za-z_.$][\w.$]*/))) {
+      i += m[0].length;
+      if (!(m[0] in sym)) {
+        const near = Object.keys(sym).find(k => k.toLowerCase() === m[0].toLowerCase());
+        throw new AsmError(near ? `Unknown name "${m[0]}". Names are case-sensitive: did you mean "${near}"?` : `Unknown name "${m[0]}"`);
+      }
+      return sym[m[0]];
+    }
+    fail();
+  }
+  function unary() {
+    skip();
+    if (s[i] === '-') { i++; return -unary(); }
+    if (s[i] === '+') { i++; return unary(); }
+    if (s[i] === '~') { i++; return (~unary()) >>> 0; }
+    if (s[i] === '(') { i++; const v = orE(); skip(); if (s[i] !== ')') fail(); i++; return v; }
+    return atom();
+  }
+  function mulE() { let v = unary(); for (;;) { skip(); if (s[i] === '*') { i++; v = v * unary(); } else if (s[i] === '/') { i++; v = Math.trunc(v / unary()); } else return v; } }
+  function addE() { let v = mulE(); for (;;) { skip(); if (s[i] === '+') { i++; v += mulE(); } else if (s[i] === '-') { i++; v -= mulE(); } else return v; } }
+  function shE() { let v = addE(); for (;;) { skip(); if (s.startsWith('<<', i)) { i += 2; v = v * 2 ** addE(); } else if (s.startsWith('>>', i)) { i += 2; v = Math.floor(v / 2 ** addE()); } else return v; } }
+  function andE() { let v = shE(); for (;;) { skip(); if (s[i] === '&') { i++; v = (v & shE()) >>> 0; } else return v; } }
+  function orE() { let v = andE(); for (;;) { skip(); if (s[i] === '|') { i++; v = (v | andE()) >>> 0; } else return v; } }
+  const v = orE(); skip(); if (i < s.length) fail(); return v;
+}
+
+function parseReg(t, ctx) {
+  const raw = String(t).trim(), u = raw.toUpperCase(); let m;
+  if ((m = u.match(/^R(\d{1,2})$/)) && +m[1] <= 15) return +m[1];
+  if (u === 'SP') return 13; if (u === 'LR') return 14; if (u === 'PC') return 15;
+  if (ctx && ctx.regAlias && raw in ctx.regAlias) return ctx.regAlias[raw];
+  throw new AsmError(`"${raw}" isn't a register (use R0–R15, SP, LR or PC)`);
+}
+function immVal(t, ctx) { let s = String(t).trim(); if (s[0] === '#') s = s.slice(1); return evalExpr(s, ctx.sym); }
+const isShiftTok = t => /^(LSL|LSR|ASR|ROR)\s+\S+/i.test(String(t).trim()) || /^RRX$/i.test(String(t).trim());
+
+function shiftC(v, type, amt, cin) {
+  v >>>= 0;
+  if (type === 'RRX') return { v: ((cin << 31) | (v >>> 1)) >>> 0, c: v & 1 };
+  if (amt === 0) return { v, c: cin };
+  switch (type) {
+    case 'LSL': if (amt < 32) return { v: (v << amt) >>> 0, c: (v >>> (32 - amt)) & 1 }; return { v: 0, c: amt === 32 ? v & 1 : 0 };
+    case 'LSR': if (amt < 32) return { v: v >>> amt, c: (v >>> (amt - 1)) & 1 }; return { v: 0, c: amt === 32 ? v >>> 31 : 0 };
+    case 'ASR': if (amt < 32) return { v: ((v | 0) >> amt) >>> 0, c: (v >>> (amt - 1)) & 1 }; return { v: (v >>> 31) ? 0xFFFFFFFF : 0, c: v >>> 31 };
+    case 'ROR': { const a = amt % 32; if (a === 0) return { v, c: v >>> 31 }; const r = ((v >>> a) | (v << (32 - a))) >>> 0; return { v: r, c: r >>> 31 }; }
+  }
+  throw new AsmError('Unknown shift ' + type);
+}
+function awc(x, y, c) {
+  const us = (x >>> 0) + (y >>> 0) + c;
+  const res = us % 4294967296;
+  const ss = (x | 0) + (y | 0) + c;
+  return { res: res >>> 0, C: us >= 4294967296 ? 1 : 0, V: ss !== (res | 0) ? 1 : 0 };
+}
+function op2(tokens, ctx) {
+  if (!tokens.length || !tokens[0]) throw new AsmError('An operand is missing');
+  const t0 = tokens[0].trim();
+  if (t0[0] === '#') {
+    if (tokens.length > 1) throw new AsmError(`A constant can't be shifted: "${tokens.join(', ')}"`);
+    const v = immVal(t0, ctx) >>> 0;
+    return cpu => ({ v, c: cpu.C });
+  }
+  const m = parseReg(t0, ctx);
+  if (tokens.length === 1) return cpu => ({ v: cpu.get(m), c: cpu.C });
+  if (tokens.length > 2) throw new AsmError(`Too many operands: "${tokens.join(', ')}"`);
+  const sh = tokens[1].trim();
+  if (/^RRX$/i.test(sh)) return cpu => shiftC(cpu.get(m), 'RRX', 1, cpu.C);
+  const mm = sh.match(/^(LSL|LSR|ASR|ROR)\s+(.+)$/i);
+  if (!mm) throw new AsmError(`Can't read the shift "${sh}" (expected e.g. LSL #2)`);
+  const type = mm[1].toUpperCase(), at = mm[2].trim();
+  if (at[0] === '#' || /^\d/.test(at)) { const n = immVal(at, ctx); return cpu => shiftC(cpu.get(m), type, n, cpu.C); }
+  const s = parseReg(at, ctx);
+  return cpu => shiftC(cpu.get(m), type, cpu.get(s) & 0xFF, cpu.C);
+}
+function regList(tok, ctx) {
+  const t = String(tok).trim();
+  if (!/^\{.*\}$/.test(t)) throw new AsmError('A register list goes in braces, like {R4, LR}');
+  const set = new Set();
+  for (const part of t.slice(1, -1).split(',')) {
+    const p = part.trim(); if (!p) continue;
+    const r = p.split('-');
+    if (r.length === 2) { const a = parseReg(r[0], ctx), b = parseReg(r[1], ctx); if (a > b) throw new AsmError(`Range ${p} goes backwards`); for (let i = a; i <= b; i++) set.add(i); }
+    else set.add(parseReg(p, ctx));
+  }
+  if (!set.size) throw new AsmError('The register list is empty');
+  return [...set].sort((a, b) => a - b);
+}
+function addrMode(tokens, ctx) {
+  const first = tokens[0].trim();
+  const mm = first.match(/^\[(.*)\]\s*(!?)$/);
+  if (!mm) throw new AsmError(`Can't read the address "${first}" (expected e.g. [R0], [R0, #4], [R0, #4]! or [R0], #4)`);
+  const parts = splitOps(mm[1]), bang = mm[2] === '!';
+  const base = parseReg(parts[0], ctx);
+  const baseVal = cpu => base === 15 ? ((cpu.curAddr + 4) & ~3) >>> 0 : cpu.r[base];
+  const offFn = offParts => {
+    if (!offParts.length) return () => 0;
+    let p0 = offParts[0].trim();
+    if (p0[0] === '#') { if (offParts.length > 1) throw new AsmError('An immediate offset can\'t be shifted'); const v = immVal(p0, ctx); return () => v; }
+    let neg = false; if (p0[0] === '-') { neg = true; p0 = p0.slice(1); } else if (p0[0] === '+') p0 = p0.slice(1);
+    const o = op2([p0, ...offParts.slice(1)], ctx);
+    return cpu => { const v = o(cpu).v; return neg ? -v : v; };
+  };
+  if (tokens.length === 1) {
+    const off = offFn(parts.slice(1));
+    return cpu => { const a = (baseVal(cpu) + off(cpu)) >>> 0; return { addr: a, wb: bang ? () => cpu.set(base, a) : null }; };
+  }
+  if (bang || parts.length > 1) throw new AsmError('Use either [Rn, #off]! (pre-index) or [Rn], #off (post-index), not both');
+  const off = offFn(tokens.slice(1));
+  return cpu => { const b = baseVal(cpu); return { addr: b, wb: () => cpu.set(base, (b + off(cpu)) >>> 0) }; };
+}
+const lowMask = w => (w >= 32 ? 0xFFFFFFFF : 2 ** w - 1);
+function fieldCheck(lsb, w) { if (!(lsb >= 0 && lsb <= 31 && w >= 1 && w <= 32 && lsb + w <= 32)) throw new AsmError(`Bit field #${lsb}, #${w} doesn't fit in 32 bits`); }
+function readSized(cpu, a, size, signed) {
+  if (size === 1) { const b = cpu.read8(a); return signed ? ((b << 24) >> 24) >>> 0 : b; }
+  if (size === 2) { const h = cpu.read16(a); return signed ? ((h << 16) >> 16) >>> 0 : h; }
+  return cpu.read32(a);
+}
+
+function compile(st, ctx) {
+  const { op, s: S, ops } = st;
+  const R = t => parseReg(t, ctx);
+  const imm = t => immVal(t, ctx);
+  const need = (n, form) => { if (ops.length !== n) throw new AsmError(`Expected: ${form}`); };
+  const labelErr = name => {
+    const near = Object.keys(ctx.sym).find(k => k.toLowerCase() === name.toLowerCase() && k !== name);
+    return new AsmError(near ? `Unknown label "${name}". Labels are case-sensitive: did you mean "${near}"?` : `Unknown label "${name}"`);
+  };
+  const codeTarget = name => { name = name.trim(); if (ctx.labelKind[name] === 'code') return ctx.sym[name]; throw labelErr(name); };
+  const setNZ = (cpu, r) => { cpu.N = r >>> 31; cpu.Z = r === 0 ? 1 : 0; };
+  switch (op) {
+    case 'ADD': case 'ADDW': case 'ADC': case 'SUB': case 'SUBW': case 'SBC': case 'RSB':
+    case 'AND': case 'ORR': case 'EOR': case 'BIC': case 'ORN': {
+      if (ops.length < 2) throw new AsmError(`Expected: ${op} Rd, Rn, operand2`);
+      let d, n, rest;
+      if (ops.length === 2 || (ops.length === 3 && isShiftTok(ops[2]))) { d = n = R(ops[0]); rest = ops.slice(1); }
+      else { d = R(ops[0]); n = R(ops[1]); rest = ops.slice(2); }
+      const o2 = op2(rest, ctx);
+      return cpu => {
+        const a = cpu.get(n), { v: b, c: sc } = o2(cpu);
+        let res, C = cpu.C, V = cpu.V;
+        switch (op) {
+          case 'ADD': case 'ADDW': ({ res, C, V } = awc(a, b, 0)); break;
+          case 'ADC': ({ res, C, V } = awc(a, b, cpu.C)); break;
+          case 'SUB': case 'SUBW': ({ res, C, V } = awc(a, (~b) >>> 0, 1)); break;
+          case 'SBC': ({ res, C, V } = awc(a, (~b) >>> 0, cpu.C)); break;
+          case 'RSB': ({ res, C, V } = awc((~a) >>> 0, b, 1)); break;
+          case 'AND': res = (a & b) >>> 0; C = sc; break;
+          case 'ORR': res = (a | b) >>> 0; C = sc; break;
+          case 'EOR': res = (a ^ b) >>> 0; C = sc; break;
+          case 'BIC': res = (a & ~b) >>> 0; C = sc; break;
+          case 'ORN': res = (a | ~b) >>> 0; C = sc; break;
+        }
+        if (S && d !== 15) { setNZ(cpu, res); cpu.C = C; cpu.V = V; }
+        cpu.set(d, res);
+      };
+    }
+    case 'MOV': case 'MVN': {
+      if (ops.length < 2) throw new AsmError(`Expected: ${op} Rd, operand2`);
+      if (ops[1].trim()[0] === '[') throw new AsmError(`${op} can't read memory. To load from an address use LDR ${ops[0].trim()}, ${ops.slice(1).join(', ')}`);
+      const d = R(ops[0]), o2 = op2(ops.slice(1), ctx);
+      return cpu => { const { v, c } = o2(cpu); const res = op === 'MVN' ? (~v) >>> 0 : v >>> 0; if (S && d !== 15) { setNZ(cpu, res); cpu.C = c; } cpu.set(d, res); };
+    }
+    case 'MOVW': { need(2, 'MOVW Rd, #imm16'); const d = R(ops[0]), v = imm(ops[1]) & 0xFFFF; return cpu => cpu.set(d, v); }
+    case 'MOVT': { need(2, 'MOVT Rd, #imm16'); const d = R(ops[0]), v = imm(ops[1]) & 0xFFFF; return cpu => cpu.set(d, ((v << 16) | (cpu.get(d) & 0xFFFF)) >>> 0); }
+    case 'MOV32': { need(2, 'MOV32 Rd, #imm32'); const d = R(ops[0]), v = imm(ops[1]) >>> 0; return cpu => cpu.set(d, v); }
+    case 'CMP': case 'CMN': case 'TST': case 'TEQ': {
+      if (ops.length < 2) throw new AsmError(`Expected: ${op} Rn, operand2`);
+      const n = R(ops[0]), o2 = op2(ops.slice(1), ctx);
+      return cpu => {
+        const a = cpu.get(n), { v: b, c: sc } = o2(cpu); let res, C = cpu.C, V = cpu.V;
+        if (op === 'CMP') ({ res, C, V } = awc(a, (~b) >>> 0, 1));
+        else if (op === 'CMN') ({ res, C, V } = awc(a, b, 0));
+        else if (op === 'TST') { res = (a & b) >>> 0; C = sc; }
+        else { res = (a ^ b) >>> 0; C = sc; }
+        setNZ(cpu, res); cpu.C = C; cpu.V = V;
+      };
+    }
+    case 'LSL': case 'LSR': case 'ASR': case 'ROR': {
+      let d, m, at;
+      if (ops.length === 3) { d = R(ops[0]); m = R(ops[1]); at = ops[2]; }
+      else if (ops.length === 2) { d = m = R(ops[0]); at = ops[1]; }
+      else throw new AsmError(`Expected: ${op} Rd, Rm, #n`);
+      at = at.trim(); let amt;
+      if (at[0] === '#' || /^\d/.test(at)) { const k = imm(at); amt = () => k; } else { const sr = R(at); amt = cpu => cpu.get(sr) & 0xFF; }
+      return cpu => { const { v, c } = shiftC(cpu.get(m), op, amt(cpu), cpu.C); if (S) { setNZ(cpu, v); cpu.C = c; } cpu.set(d, v); };
+    }
+    case 'RRX': {
+      let d, m; if (ops.length === 2) { d = R(ops[0]); m = R(ops[1]); } else if (ops.length === 1) { d = m = R(ops[0]); } else throw new AsmError('Expected: RRX Rd, Rm');
+      return cpu => { const { v, c } = shiftC(cpu.get(m), 'RRX', 1, cpu.C); if (S) { setNZ(cpu, v); cpu.C = c; } cpu.set(d, v); };
+    }
+    case 'MUL': {
+      let d, n, m;
+      if (ops.length === 3) { d = R(ops[0]); n = R(ops[1]); m = R(ops[2]); } else if (ops.length === 2) { d = n = R(ops[0]); m = R(ops[1]); } else throw new AsmError('Expected: MUL Rd, Rn, Rm');
+      return cpu => { const res = Math.imul(cpu.get(n), cpu.get(m)) >>> 0; if (S) setNZ(cpu, res); cpu.set(d, res); };
+    }
+    case 'MLA': case 'MLS': {
+      need(4, `${op} Rd, Rn, Rm, Ra`); const d = R(ops[0]), n = R(ops[1]), m = R(ops[2]), a = R(ops[3]);
+      return cpu => { const p = Math.imul(cpu.get(n), cpu.get(m)); const res = (op === 'MLA' ? cpu.get(a) + p : cpu.get(a) - p) >>> 0; if (S) setNZ(cpu, res); cpu.set(d, res); };
+    }
+    case 'UMULL': case 'SMULL': case 'UMLAL': case 'SMLAL': {
+      need(4, `${op} RdLo, RdHi, Rn, Rm`); const lo = R(ops[0]), hi = R(ops[1]), n = R(ops[2]), m = R(ops[3]);
+      return cpu => {
+        const sg = op[0] === 'S', big = x => (sg ? BigInt(x | 0) : BigInt(x >>> 0));
+        let p = big(cpu.get(n)) * big(cpu.get(m));
+        if (op.endsWith('LAL')) p += (BigInt(cpu.get(hi)) << 32n) | BigInt(cpu.get(lo));
+        p = BigInt.asUintN(64, p);
+        const L = Number(p & 0xFFFFFFFFn), H = Number(p >> 32n);
+        if (S) { cpu.N = H >>> 31; cpu.Z = L === 0 && H === 0 ? 1 : 0; }
+        cpu.set(lo, L); cpu.set(hi, H);
+      };
+    }
+    case 'UDIV': case 'SDIV': {
+      let d, n, m; if (ops.length === 3) { d = R(ops[0]); n = R(ops[1]); m = R(ops[2]); } else if (ops.length === 2) { d = n = R(ops[0]); m = R(ops[1]); } else throw new AsmError(`Expected: ${op} Rd, Rn, Rm`);
+      return cpu => { const a = cpu.get(n), b = cpu.get(m); let res; if (b === 0) res = 0; else if (op === 'UDIV') res = Math.floor(a / b) >>> 0; else res = Math.trunc((a | 0) / (b | 0)) >>> 0; cpu.set(d, res); };
+    }
+    case 'BFC': {
+      need(3, 'BFC Rd, #lsb, #width'); const d = R(ops[0]), lsb = imm(ops[1]), w = imm(ops[2]); fieldCheck(lsb, w);
+      const mask = (lowMask(w) << lsb) >>> 0; return cpu => cpu.set(d, (cpu.get(d) & ~mask) >>> 0);
+    }
+    case 'BFI': {
+      need(4, 'BFI Rd, Rn, #lsb, #width'); const d = R(ops[0]), n = R(ops[1]), lsb = imm(ops[2]), w = imm(ops[3]); fieldCheck(lsb, w);
+      const mask = (lowMask(w) << lsb) >>> 0; return cpu => cpu.set(d, ((cpu.get(d) & ~mask) | ((cpu.get(n) << lsb) & mask)) >>> 0);
+    }
+    case 'UBFX': case 'SBFX': {
+      need(4, `${op} Rd, Rn, #lsb, #width`); const d = R(ops[0]), n = R(ops[1]), lsb = imm(ops[2]), w = imm(ops[3]); fieldCheck(lsb, w);
+      return cpu => { let v = ((cpu.get(n) >>> lsb) & lowMask(w)) >>> 0; if (op === 'SBFX' && w < 32 && ((v >>> (w - 1)) & 1)) v = (v | ~lowMask(w)) >>> 0; cpu.set(d, v); };
+    }
+    case 'CLZ': case 'RBIT': case 'REV': case 'REV16': case 'REVSH': {
+      let d, m; if (ops.length === 2) { d = R(ops[0]); m = R(ops[1]); } else if (ops.length === 1) { d = m = R(ops[0]); } else throw new AsmError(`Expected: ${op} Rd, Rm`);
+      return cpu => {
+        const x = cpu.get(m); let v;
+        switch (op) {
+          case 'CLZ': v = Math.clz32(x); break;
+          case 'RBIT': v = 0; for (let i = 0; i < 32; i++) if ((x >>> i) & 1) v |= 1 << (31 - i); v >>>= 0; break;
+          case 'REV': v = (((x & 0xFF) << 24) | (((x >>> 8) & 0xFF) << 16) | (((x >>> 16) & 0xFF) << 8) | (x >>> 24)) >>> 0; break;
+          case 'REV16': v = (((x >>> 8) & 0xFF) | ((x & 0xFF) << 8) | (((x >>> 24) & 0xFF) << 16) | (((x >>> 16) & 0xFF) << 24)) >>> 0; break;
+          case 'REVSH': { let h = ((x & 0xFF) << 8) | ((x >>> 8) & 0xFF); if (h & 0x8000) h |= 0xFFFF0000; v = h >>> 0; break; }
+        }
+        cpu.set(d, v);
+      };
+    }
+    case 'SXTB': case 'SXTH': case 'UXTB': case 'UXTH': {
+      let d, m, rot = 0;
+      if (ops.length >= 2 && ops.length <= 3) {
+        d = R(ops[0]); m = R(ops[1]);
+        if (ops[2]) { const mm = ops[2].trim().match(/^ROR\s+(.+)$/i); if (!mm) throw new AsmError(`Expected: ${op} Rd, Rm, ROR #n`); rot = imm(mm[1]); if (![0, 8, 16, 24].includes(rot)) throw new AsmError('The rotation must be 0, 8, 16 or 24'); }
+      } else if (ops.length === 1) { d = m = R(ops[0]); } else throw new AsmError(`Expected: ${op} Rd, Rm`);
+      return cpu => {
+        let x = cpu.get(m); if (rot) x = ((x >>> rot) | (x << (32 - rot))) >>> 0;
+        let v; if (op === 'UXTB') v = x & 0xFF; else if (op === 'UXTH') v = x & 0xFFFF; else if (op === 'SXTB') v = ((x & 0xFF) << 24) >> 24; else v = ((x & 0xFFFF) << 16) >> 16;
+        cpu.set(d, v >>> 0);
+      };
+    }
+    case 'ADR': {
+      need(2, 'ADR Rd, label'); const d = R(ops[0]), name = ops[1].trim();
+      if (!(name in ctx.sym) || ctx.labelKind[name] === 'equ') throw labelErr(name);
+      const a = ctx.sym[name] >>> 0; return cpu => cpu.set(d, a);
+    }
+    case 'B': case 'BL': {
+      need(1, `${op} label`); const t = codeTarget(ops[0]);
+      return cpu => { if (op === 'BL') cpu.r[14] = cpu.nextAddr; cpu.branchAddr(t); };
+    }
+    case 'BX': case 'BLX': {
+      need(1, `${op} Rm`); const m = R(ops[0]);
+      return cpu => { const t = cpu.get(m); if (op === 'BLX') cpu.r[14] = cpu.nextAddr; cpu.branchAddr(t); };
+    }
+    case 'CBZ': case 'CBNZ': {
+      need(2, `${op} Rn, label`); const n = R(ops[0]); const t = codeTarget(ops[1]);
+      if (t <= st.addr) throw new AsmError(`${op} can only branch forward (0–126 bytes ahead). To loop back, use "${op === 'CBNZ' ? 'CBZ' : 'CBNZ'} ${ops[0].trim()}, <label after the loop>" followed by "B ${ops[1].trim()}", or CMP + B<cond>`);
+      return cpu => { const z = cpu.get(n) === 0; if (op === 'CBZ' ? z : !z) cpu.branchAddr(t); };
+    }
+    case 'IT': {
+      need(1, `${'IT' + (st.mask || '')} cond`); if (!CONDSET.has(ops[0].trim().toUpperCase()) || ops[0].trim().toUpperCase() === 'AL' && st.mask) throw new AsmError(`"${ops[0]}" isn't a condition code`);
+      return () => {};
+    }
+    case 'NOP': case 'WFI': case 'WFE': return () => {};
+    case 'MRS': {
+      need(2, 'MRS Rd, PRIMASK'); const d = R(ops[0]), spec = ops[1].trim().toUpperCase();
+      if (!['PRIMASK','BASEPRI','FAULTMASK','APSR'].includes(spec)) throw new AsmError(`MRS can read PRIMASK, BASEPRI, FAULTMASK or APSR, not "${ops[1]}"`);
+      return cpu => cpu.set(d, spec === 'PRIMASK' ? cpu.primask : spec === 'BASEPRI' ? cpu.basepri : spec === 'FAULTMASK' ? cpu.faultmask : ((cpu.N << 31) | (cpu.Z << 30) | (cpu.C << 29) | (cpu.V << 28)) >>> 0);
+    }
+    case 'MSR': {
+      need(2, 'MSR PRIMASK, Rn'); const spec = ops[0].trim().toUpperCase(), n = R(ops[1]);
+      if (!['PRIMASK','BASEPRI','FAULTMASK'].includes(spec)) throw new AsmError(`MSR can write PRIMASK, BASEPRI or FAULTMASK, not "${ops[0]}"`);
+      return cpu => { const v = cpu.get(n); if (spec === 'PRIMASK') cpu.primask = v & 1; else if (spec === 'BASEPRI') cpu.basepri = v & 0xFF; else cpu.faultmask = v & 1; };
+    }
+    case 'CPSID': case 'CPSIE': {
+      need(1, `${op} I`); const w = ops[0].trim().toUpperCase();
+      if (w !== 'I' && w !== 'F') throw new AsmError(`Expected: ${op} I`);
+      return cpu => { const v = op === 'CPSID' ? 1 : 0; if (w === 'I') cpu.primask = v; else cpu.faultmask = v; };
+    }
+    case 'LDR': case 'LDRB': case 'LDRH': case 'LDRSB': case 'LDRSH': case 'STR': case 'STRB': case 'STRH': {
+      if (ops.length < 2) throw new AsmError(`Expected: ${op} Rt, [Rn ...]`);
+      const t = R(ops[0]), load = op[0] === 'L';
+      const size = /B$/.test(op) ? 1 : /H$/.test(op) ? 2 : 4, signed = op.startsWith('LDRS');
+      const a1 = ops[1].trim();
+      if (a1[0] === '=') {
+        if (op !== 'LDR') throw new AsmError('Only LDR (a word) can load a constant with "="');
+        if (ops.length > 2) throw new AsmError('Expected: LDR Rd, =value');
+        const v = immVal(a1.slice(1), ctx) >>> 0; return cpu => cpu.set(t, v);
+      }
+      if (a1[0] === '#') throw new AsmError(`${op} can't take a # constant. To put a number in a register use MOV ${ops[0].trim()}, ${a1} (or LDR ${ops[0].trim()}, =${a1.slice(1)} for big values)`);
+      if (a1[0] !== '[') {
+        let isReg = false; try { parseReg(a1, ctx); isReg = true; } catch (e) {}
+        if (isReg) throw new AsmError(load ? `${op} reads from memory. To copy one register into another use MOV ${ops[0].trim()}, ${a1}` : `${op} writes to memory: the address goes in brackets, like ${op} ${ops[0].trim()}, [${a1}]`);
+        if (ops.length > 2) throw new AsmError(`Can't read the address "${ops.slice(1).join(', ')}"`);
+        if (!(a1 in ctx.sym) || ctx.labelKind[a1] === 'equ') throw labelErr(a1);
+        const addr = ctx.sym[a1] >>> 0;
+        return cpu => { if (load) cpu.set(t, readSized(cpu, addr, size, signed)); else cpu.write(addr, cpu.get(t), size); };
+      }
+      const am = addrMode(ops.slice(1), ctx);
+      return cpu => {
+        const { addr, wb } = am(cpu);
+        if (load) { const v = readSized(cpu, addr, size, signed); if (wb) wb(); cpu.set(t, v); }
+        else { cpu.write(addr, cpu.get(t), size); if (wb) wb(); }
+      };
+    }
+    case 'LDRD': case 'STRD': {
+      if (ops.length < 3) throw new AsmError(`Expected: ${op} Rt, Rt2, [Rn ...]`);
+      const t = R(ops[0]), t2 = R(ops[1]), am = addrMode(ops.slice(2), ctx), load = op === 'LDRD';
+      return cpu => {
+        const { addr, wb } = am(cpu);
+        if (load) { const v1 = cpu.read32(addr), v2 = cpu.read32(addr + 4); if (wb) wb(); cpu.set(t, v1); cpu.set(t2, v2); }
+        else { cpu.write(addr, cpu.get(t), 4); cpu.write((addr + 4) >>> 0, cpu.get(t2), 4); if (wb) wb(); }
+      };
+    }
+    case 'PUSH': case 'POP': {
+      need(1, `${op} {reglist}`); const list = regList(ops[0], ctx);
+      if (op === 'PUSH') return cpu => { const start = (cpu.r[13] - 4 * list.length) >>> 0; list.forEach((r, i) => cpu.write((start + 4 * i) >>> 0, cpu.get(r), 4)); cpu.r[13] = start; };
+      return cpu => { const start = cpu.r[13]; const vals = list.map((r, i) => cpu.read32((start + 4 * i) >>> 0)); cpu.r[13] = (start + 4 * list.length) >>> 0; list.forEach((r, i) => cpu.set(r, vals[i])); };
+    }
+    default:
+      if (op in LDM_MODE) {
+        need(2, `${op} Rn{!}, {reglist}`);
+        const bt = ops[0].trim(), wbk = bt.endsWith('!'), n = R(wbk ? bt.slice(0, -1) : bt), list = regList(ops[1], ctx);
+        const mode = LDM_MODE[op], load = op.startsWith('LDM'), k = list.length;
+        return cpu => {
+          const b = cpu.get(n); let start = mode === 'IA' ? b : mode === 'IB' ? b + 4 : mode === 'DA' ? b - 4 * k + 4 : b - 4 * k;
+          start >>>= 0; const nb = (mode === 'IA' || mode === 'IB' ? b + 4 * k : b - 4 * k) >>> 0;
+          if (load) { const vals = list.map((r, i) => cpu.read32((start + 4 * i) >>> 0)); if (wbk) cpu.r[n] = nb; list.forEach((r, i) => cpu.set(r, vals[i])); }
+          else { list.forEach((r, i) => cpu.write((start + 4 * i) >>> 0, cpu.get(r), 4)); if (wbk) cpu.r[n] = nb; }
+        };
+      }
+      throw new AsmError(`"${op}" isn't supported`);
+  }
+}
+
+function dataBytes(dir, args, sym) {
+  const items = splitOps(args), out = [];
+  const pushLE = (v, n) => { v = Math.round(v); for (let i = 0; i < n; i++) { out.push(Number((BigInt.asUintN(64, BigInt(v)) >> BigInt(8 * i)) & 0xFFn)); } };
+  if (dir === 'SPACE') { const n = evalExpr(args, sym); for (let i = 0; i < n; i++) out.push(0); return out; }
+  if (dir === 'FILL') {
+    const n = evalExpr(items[0], sym), v = items[1] !== undefined ? evalExpr(items[1], sym) : 0, sz = items[2] !== undefined ? evalExpr(items[2], sym) : 1;
+    if (![1, 2, 4].includes(sz)) throw new AsmError('FILL value size must be 1, 2 or 4');
+    for (let i = 0; i < n; i++) out.push(Number((BigInt.asUintN(32, BigInt(v)) >> BigInt(8 * (i % sz))) & 0xFFn));
+    return out;
+  }
+  const size = { DCB: 1, DCW: 2, DCD: 4, DCDU: 4, DCQ: 8 }[dir];
+  const range = { 1: [-128, 255], 2: [-32768, 65535], 4: [-2147483648, 4294967295] }[size];
+  for (const it of items) {
+    if (!it) throw new AsmError(`Empty value in ${dir}`);
+    if (it[0] === '"') {
+      if (dir !== 'DCB') throw new AsmError('Strings are only allowed in DCB');
+      const str = it.slice(1, it.endsWith('"') ? -1 : undefined);
+      for (const ch of str) out.push(ch.charCodeAt(0) & 0xFF);
+      continue;
+    }
+    const v = evalExpr(it, sym);
+    if (range && (v < range[0] || v > range[1])) throw new AsmError(`${it} doesn't fit in ${size === 1 ? 'a byte' : size === 2 ? 'a half-word' : 'a word'} (${dir} allows ${range[0]} to ${range[1]})`);
+    pushLE(v, size);
+  }
+  return out;
+}
+function dataSize(dir, args, sym) {
+  if (dir === 'SPACE') return evalExpr(args, sym);
+  if (dir === 'FILL') return evalExpr(splitOps(args)[0], sym);
+  const size = { DCB: 1, DCW: 2, DCD: 4, DCDU: 4, DCQ: 8 }[dir];
+  let n = 0;
+  for (const it of splitOps(args)) n += it[0] === '"' ? size * (it.length - 2) : size;
+  return n;
+}
+
+function parseMemInit(text, sym, mem, errors) {
+  (text || '').split(/\r?\n/).forEach((raw, idx) => {
+    const line = raw.replace(/(;|\/\/).*$/, '').trim(); if (!line) return;
+    const m = line.match(/^(?:(b|h|w|byte|half|word)\s+)?([^:]+):\s*(.*)$/i);
+    if (!m) { errors.push({ line: idx + 1, where: 'mem', msg: 'Expected "address: value value ..."' }); return; }
+    const size = !m[1] ? 4 : /^b/i.test(m[1]) ? 1 : /^h/i.test(m[1]) ? 2 : 4;
+    try {
+      let a = evalExpr(m[2], sym) >>> 0;
+      const vals = m[3].match(/"[^"]*"|[^\s,]+/g) || [];
+      for (const v of vals) {
+        if (v[0] === '"') { for (const ch of v.slice(1, -1)) mem.set(a++ >>> 0, ch.charCodeAt(0) & 0xFF); continue; }
+        const x = evalExpr(v, sym) >>> 0;
+        for (let i = 0; i < size; i++) mem.set((a + i) >>> 0, (x >>> (8 * i)) & 0xFF);
+        a += size;
+      }
+    } catch (e) { errors.push({ line: idx + 1, where: 'mem', msg: e.message }); }
+  });
+}
+
+function assemble(src, memText) {
+  const lines = String(src).split(/\r?\n/);
+  const errors = [], sym = Object.create(null), labelKind = Object.create(null), regAlias = Object.create(null);
+  const stmts = [], dataItems = [], lineInfo = [];
+  let area = { code: true, rw: false }, romLC = ROM_BASE, ramLC = RAM_BASE, pending = [], ended = false;
+  const define = (name, value, kind, ln) => {
+    if (!/^[A-Za-z_.$][\w.$]*$/.test(name)) { errors.push({ line: ln, msg: `"${name}" can't be used as a label` }); return; }
+    if (name in sym) { errors.push({ line: ln, msg: `"${name}" is defined twice` }); return; }
+    sym[name] = value; labelKind[name] = kind;
+  };
+  lines.forEach((raw, idx) => {
+    const ln = idx + 1;
+    if (ended) return;
+    const c = classify(raw); lineInfo[ln] = c;
+    if (!c) return;
+    const { label, mn, args } = c, MN = mn ? mn.toUpperCase() : '';
+    if (label && !mn) { pending.push(label); return; }
+    try {
+      if (MN === 'EQU') { if (!label) throw new AsmError('EQU needs a name: NAME EQU value'); define(label, evalExpr(args, sym), 'equ', ln); return; }
+      if (MN === 'RN') { if (!label) throw new AsmError('RN needs a name: NAME RN register'); regAlias[label] = /^\d+$/.test(args) ? +args : parseReg(args); return; }
+      if (isDirective(MN)) {
+        const toRam = !area.code && area.rw;
+        if (MN === 'AREA') {
+          const p = args.toUpperCase(); const code = /\bCODE\b/.test(p);
+          area = { code, rw: !code && !/\bREADONLY\b/.test(p) };
+          if (label) pending.push(label);
+          return;
+        }
+        if (['DCB', 'DCW', 'DCD', 'DCDU', 'DCQ', 'SPACE', 'FILL'].includes(MN)) {
+          let lc = toRam ? ramLC : romLC;
+          const al = MN === 'DCW' ? 2 : (MN === 'DCD' || MN === 'DCQ') ? 4 : 1;
+          lc = Math.ceil(lc / al) * al;
+          [...pending, ...(label ? [label] : [])].forEach(l => define(l, lc, 'data', ln)); pending = [];
+          const size = dataSize(MN, args, sym);
+          dataItems.push({ addr: lc, dir: MN, args, line: ln });
+          lc += size; if (toRam) ramLC = lc; else romLC = lc;
+          return;
+        }
+        if (MN === 'ALIGN') {
+          const n = args ? evalExpr(splitOps(args)[0], sym) : 4;
+          if (toRam) ramLC = Math.ceil(ramLC / n) * n; else romLC = Math.ceil(romLC / n) * n;
+          if (label) pending.push(label);
+          return;
+        }
+        if (label) pending.push(label);
+        if (MN === 'END') ended = true;
+        return;
+      }
+      const p = parseMnemonic(mn);
+      if (!p) {
+        if (/^B[A-Z]{2}$/i.test(mn)) throw new AsmError(`"${mn}" isn't an instruction. If you meant a conditional branch, the conditions are EQ NE, unsigned HI HS LO LS, signed GT GE LT LE, and MI PL VS VC`);
+        if (!/^\s/.test(raw)) throw new AsmError(`"${mn}" isn't an instruction this simulator knows. (A label must start in column 1; is "${label}" meant to be an instruction? Then indent the line.)`);
+        throw new AsmError(`"${mn}" isn't an instruction this simulator knows`);
+      }
+      const index = stmts.length, addr = CODE_BASE + 4 * index;
+      [...pending, ...(label ? [label] : [])].forEach(l => define(l, addr, 'code', ln)); pending = [];
+      stmts.push({ line: ln, ...p, mn, args, addr });
+    } catch (e) { errors.push({ line: ln, msg: e.message }); }
+  });
+  pending.forEach(l => define(l, CODE_BASE + 4 * stmts.length, 'code', 0));
+  const mem = new Map();
+  for (const d of dataItems) {
+    try { dataBytes(d.dir, d.args, sym).forEach((b, i) => mem.set((d.addr + i) >>> 0, b)); }
+    catch (e) { errors.push({ line: d.line, msg: e.message }); }
+  }
+  const ctx = { sym, labelKind, regAlias };
+  for (const st of stmts) {
+    try { st.ops = splitOps(st.args); st.exec = compile(st, ctx); }
+    catch (e) { errors.push({ line: st.line, msg: e.message }); }
+  }
+  parseMemInit(memText, sym, mem, errors);
+  if (!stmts.length && !errors.length) errors.push({ line: 0, msg: 'There are no instructions to run' });
+  const addrIndex = new Map(stmts.map((s, i) => [s.addr, i]));
+  const entry = labelKind.__main === 'code' ? addrIndex.get(sym.__main) ?? 0 : 0;
+  errors.sort((a, b) => (a.where === 'mem') - (b.where === 'mem') || a.line - b.line);
+  return { stmts, sym, labelKind, mem, errors, entry, addrIndex, lineInfo, lineCount: lines.length };
+}
+
+const GPIO_BASES = [0x40004000, 0x40005000, 0x40006000, 0x40007000, 0x40024000, 0x40025000];
+const GPIO_CR_RESET = [0xFF, 0xFF, 0xF0, 0x7F, 0xFF, 0xFE];
+const RCGCGPIO = 0x400FE608, PRGPIO = 0x400FEA08;
+function gpioPort(a) { for (let i = 0; i < 6; i++) if (a >= GPIO_BASES[i] && a < GPIO_BASES[i] + 0x1000) return i; return -1; }
+
+class CPU {
+  constructor(prog) { this.prog = prog; this.reset(); }
+  reset() {
+    this.r = new Array(16).fill(0); this.r[13] = SP_INIT; this.r[14] = 0xFFFFFFFF;
+    this.N = this.Z = this.C = this.V = 0; this.primask = 0; this.basepri = 0; this.faultmask = 0;
+    this.mem = new Map(this.prog.mem);
+    this.pcIdx = this.prog.entry; this.syncPC();
+    this.history = []; this.dirty = new Set(); this.lastWrites = new Set();
+    this.steps = 0; this.cycles = 0; this.state = 'ready'; this.message = ''; this.last = null;
+    this.keypad = null; this.executing = false;
+    // GPIO reset state: every port locked; the commit register protects PC3-0, PD7 and PF0.
+    GPIO_BASES.forEach((b, i) => { if (!this.mem.has(b + 0x520)) this.mem.set(b + 0x520, 1); if (!this.mem.has(b + 0x524)) this.mem.set(b + 0x524, GPIO_CR_RESET[i]); });
+  }
+  syncPC() { const st = this.prog.stmts[this.pcIdx]; this.r[15] = st ? st.addr : (CODE_BASE + 4 * this.pcIdx) >>> 0; }
+  get(i) { return i === 15 ? (this.curAddr + 4) >>> 0 : this.r[i]; }
+  set(i, v) { if (i === 15) this.branchAddr(v); else this.r[i] = v >>> 0; }
+  branchAddr(a) {
+    a = (a & ~1) >>> 0;
+    const idx = this.prog.addrIndex.get(a);
+    if (idx === undefined) {
+      if (a === 0xFFFFFFFE) throw new RunError('BX LR jumped to 0xFFFFFFFF: LR never received a return address. Did you call a subroutine with B instead of BL? (If __main itself ended with BX LR: end programs with an infinite loop such as "stop B stop".)');
+      throw new RunError(`Jumped to ${hex(a)}, which isn't an instruction in this program.`);
+    }
+    this.nextIdx = idx;
+  }
+  raw(a) { return this.mem.get(a >>> 0) ?? 0; }
+  gpioClock(p) {
+    if (this.executing && !((this.raw(RCGCGPIO) >> p) & 1))
+      throw new RunError(`Port ${'ABCDEF'[p]}'s clock is off, so its registers can't be used yet (on the board this is a bus fault). First set bit ${p} of RCGCGPIO (0x400FE608).`);
+  }
+  // Pin levels a read of GPIODATA sees: outputs give the written value, inputs the outside level, pins with DEN = 0 read 0.
+  pinLevels(p) {
+    const b = GPIO_BASES[p], dir = this.raw(b + 0x400), den = this.raw(b + 0x51C);
+    let inp = this.raw(b + 0xF00);
+    const k = this.keypad;
+    if (k && k.port === p) {
+      const out = this.raw(b + 0x3FC);
+      inp = (inp & ~k.colMask) | k.colMask;
+      if (k.key) {
+        const [r, c] = k.key, rp = k.rows[r], cp = k.cols[c];
+        const rowLow = ((dir >> rp) & 1) && ((den >> rp) & 1) && !((out >> rp) & 1);
+        if (rowLow) inp &= ~(1 << cp);
+      }
+    }
+    return (((this.raw(b + 0x3FC) & dir) | (inp & ~dir)) & den) & 0xFF;
+  }
+  read8(a) {
+    a >>>= 0;
+    const p = gpioPort(a);
+    if (p >= 0) {
+      this.gpioClock(p);
+      const b = GPIO_BASES[p], off = a - b;
+      if (off < 0x400) return (a & 3) ? 0 : this.pinLevels(p) & ((off >> 2) & 0xFF);
+      if (off === 0x418) return this.raw(b + 0x414) & this.raw(b + 0x410);
+      if (off >= 0x419 && off < 0x420) return 0;
+      if (off >= 0x520 && off < 0x524) return off === 0x520 ? this.raw(b + 0x520) & 1 : 0;
+    }
+    if (a >= PRGPIO && a < PRGPIO + 4) return this.raw(RCGCGPIO + (a - PRGPIO));
+    return this.raw(a);
+  }
+  read16(a) { return (this.read8(a) | (this.read8(a + 1) << 8)) >>> 0; }
+  read32(a) { return (this.read8(a) | (this.read8(a + 1) << 8) | (this.read8(a + 2) << 16) | (this.read8(a + 3) << 24)) >>> 0; }
+  writeByte(ad, b) {
+    ad >>>= 0;
+    this.undoMem.push([ad, this.mem.has(ad) ? this.mem.get(ad) : undefined, this.dirty.has(ad)]);
+    this.mem.set(ad, b & 0xFF); this.lastWrites.add(ad); this.dirty.add(ad);
+  }
+  write(a, v, size) {
+    a >>>= 0;
+    const p = gpioPort(a);
+    if (p >= 0) {
+      this.gpioClock(p);
+      const b = GPIO_BASES[p], off = a - b, lo = v & 0xFF;
+      if (off < 0x400) { if (!(a & 3)) { const m = (off >> 2) & 0xFF; this.writeByte(b + 0x3FC, (this.raw(b + 0x3FC) & ~m) | (lo & m)); } return; }
+      if (off >= 0x41C && off < 0x420) { if (off === 0x41C) this.writeByte(b + 0x414, this.raw(b + 0x414) & ~(lo & ~this.raw(b + 0x404))); return; }
+      if (off >= 0x414 && off < 0x41C) return;
+      if (off >= 0x520 && off < 0x524) { this.writeByte(b + 0x520, (off === 0x520 && size === 4 && (v >>> 0) === 0x4C4F434B) ? 0 : 1); return; }
+      if (off >= 0x524 && off < 0x528 && (this.raw(b + 0x520) & 1)) return;
+      if (off === 0x420 || off === 0x510 || off === 0x514 || off === 0x51C) {
+        const cr = this.raw(b + 0x524);
+        this.writeByte(a, (this.raw(a) & ~cr) | (lo & cr));
+        for (let i = 1; i < size; i++) this.writeByte(a + i, (v >>> (8 * i)) & 0xFF);
+        return;
+      }
+    }
+    for (let i = 0; i < size; i++) this.writeByte(a + i, (v >>> (8 * i)) & 0xFF);
+  }
+  // Change the outside level of input pins (used by the pin panel); sets RIS for configured edges/levels.
+  setInputs(p, lv) {
+    const b = GPIO_BASES[p], old = this.raw(b + 0xF00);
+    this.mem.set(b + 0xF00, lv & 0xFF);
+    const is = this.raw(b + 0x404), ibe = this.raw(b + 0x408), iev = this.raw(b + 0x40C);
+    let ris = this.raw(b + 0x414);
+    for (let i = 0; i < 8; i++) {
+      const o = (old >> i) & 1, n = (lv >> i) & 1, bit = 1 << i;
+      if ((is >> i) & 1) { if (n === ((iev >> i) & 1)) ris |= bit; else ris &= ~bit; }
+      else if (o !== n && (((ibe >> i) & 1) || n === ((iev >> i) & 1))) ris |= bit;
+    }
+    this.mem.set(b + 0x414, ris);
+  }
+  step() {
+    if (this.state === 'halted' || this.state === 'error') return false;
+    const idx = this.pcIdx, ins = this.prog.stmts[idx];
+    if (!ins) { this.state = 'error'; this.message = 'The program ran past its last instruction. End programs with an infinite loop such as "stop B stop".'; return false; }
+    const snap = { cy: this.cycles, r: this.r.slice(), f: [this.N, this.Z, this.C, this.V], sp: [this.primask, this.basepri, this.faultmask], pcIdx: idx, mem: [], last: this.last, lastWrites: this.lastWrites };
+    this.undoMem = snap.mem; this.lastWrites = new Set();
+    this.curAddr = ins.addr; this.nextIdx = idx + 1;
+    this.nextAddr = this.prog.stmts[idx + 1] ? this.prog.stmts[idx + 1].addr : (ins.addr + 4) >>> 0;
+    const executed = condPass(ins.cond, this);
+    try { this.executing = true; if (executed) ins.exec(this); this.executing = false; }
+    catch (e) {
+      this.executing = false;
+      this.r = snap.r; [this.N, this.Z, this.C, this.V] = snap.f; [this.primask, this.basepri, this.faultmask] = snap.sp;
+      for (let i = snap.mem.length - 1; i >= 0; i--) { const [a, old] = snap.mem[i]; if (old === undefined) this.mem.delete(a); else this.mem.set(a, old); }
+      this.lastWrites = snap.lastWrites; this.syncPC();
+      this.state = 'error'; this.message = `Line ${ins.line}: ${e.message}`; return false;
+    }
+    this.history.push(snap); if (this.history.length > 20000) this.history.shift();
+    this.steps++; this.cycles += (executed && this.nextIdx !== idx + 1) ? 2 : 1; this.last = { idx, executed };
+    this.pcIdx = this.nextIdx; this.syncPC();
+    if (executed && this.nextIdx === idx && ins.op === 'B') { this.state = 'halted'; this.message = `Line ${ins.line} branches to itself, so the program has reached its end loop.`; }
+    else this.state = 'paused';
+    return true;
+  }
+  back() {
+    const s = this.history.pop(); if (!s) return false;
+    this.r = s.r; [this.N, this.Z, this.C, this.V] = s.f; [this.primask, this.basepri, this.faultmask] = s.sp;
+    for (let i = s.mem.length - 1; i >= 0; i--) { const [a, old, wasDirty] = s.mem[i]; if (old === undefined) this.mem.delete(a); else this.mem.set(a, old); if (!wasDirty) this.dirty.delete(a); }
+    this.pcIdx = s.pcIdx; this.syncPC(); this.last = s.last; this.lastWrites = s.lastWrites || new Set();
+    this.steps--; this.cycles = s.cy; this.state = this.steps ? 'paused' : 'ready'; this.message = '';
+    return true;
+  }
+  run(limit, breakpoints) {
+    let n = 0;
+    while (n < limit) {
+      if (n > 0 && breakpoints && breakpoints.has(this.prog.stmts[this.pcIdx]?.line)) return 'breakpoint';
+      if (!this.step()) return this.state;
+      n++;
+      if (this.state === 'halted') return 'halted';
+    }
+    return 'limit';
+  }
+}
+
+root.Sim = { assemble, CPU, hex, parseMnemonic, classify, CODE_BASE, ROM_BASE, RAM_BASE, SP_INIT, GPIO_BASES };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+(function (root) {
+'use strict';
+const SENT = i => (0xA0000000 + i) >>> 0;
+const hx = v => '0x' + (v >>> 0).toString(16).toUpperCase();
+function addrOf(prog, a) {
+  if (typeof a === 'number') return a >>> 0;
+  if (/^0x/i.test(a)) return parseInt(a, 16) >>> 0;
+  if (!(a in prog.sym)) throw new Error(`Your code has no label "${a}". Keep the label names from the starter code.`);
+  return prog.sym[a] >>> 0;
+}
+function regNo(k) { return k === 'sp' ? 13 : k === 'lr' ? 14 : +k.slice(1); }
+function runCase(Sim, prog, c, limit) {
+  const cpu = new Sim.CPU(prog);
+  cpu.reset();
+  const start = {};
+  if (c.type === 'call') {
+    for (let i = 0; i <= 12; i++) cpu.r[i] = SENT(i);
+    if (!(c.sub in prog.sym) || prog.labelKind[c.sub] !== 'code') throw new Error(`Your code has no subroutine label "${c.sub}".`);
+    if (!('stop' in prog.sym)) throw new Error('Keep the "stop B stop" line from the starter code.');
+    cpu.r[14] = prog.sym.stop >>> 0;
+    cpu.pcIdx = prog.addrIndex.get(prog.sym[c.sub]); cpu.syncPC();
+  }
+  for (const [k, v] of Object.entries(c.regs || {})) cpu.r[regNo(k)] = typeof v === 'string' ? addrOf(prog, v) : v >>> 0;
+  if (c.primask !== undefined) cpu.primask = c.primask;
+  for (const [lab, ws] of (c.setWords || [])) { const a = addrOf(prog, lab); ws.forEach((w, i) => { for (let b = 0; b < 4; b++) cpu.mem.set((a + 4 * i + b) >>> 0, (w >>> (8 * b)) & 0xFF); }); }
+  for (const [pt, lv] of Object.entries(c.inputs || {})) cpu.mem.set(Sim.GPIO_BASES['ABCDEF'.indexOf(pt)] + 0xF00, lv & 0xFF);
+  if (c.keypad) cpu.keypad = { port: 'ABCDEF'.indexOf(c.keypad.port), rows: c.keypad.rows, cols: c.keypad.cols, colMask: c.keypad.cols.reduce((m, x) => m | (1 << x), 0), key: c.keypad.key || null };
+  if (c.stackArgs) { cpu.r[13] = (cpu.r[13] - 4 * c.stackArgs.length) >>> 0; c.stackArgs.forEach((w, i) => { for (let b = 0; b < 4; b++) cpu.mem.set((cpu.r[13] + 4 * i + b) >>> 0, (w >>> (8 * b)) & 0xFF); }); }
+  for (let i = 0; i <= 12; i++) start['r' + i] = cpu.r[i];
+  start.sp = cpu.r[13];
+  const res = cpu.run(limit || 300000);
+  return { cpu, res, start };
+}
+function check(Sim, src, spec) {
+  const out = [];
+  const prog = Sim.assemble(src, spec.mem || '');
+  if (prog.errors.length) return { ok: false, items: [{ ok: false, text: `Your code doesn't assemble: line ${prog.errors[0].line}: ${prog.errors[0].msg}` }] };
+  if (spec.forbid) {
+    const used = new Set();
+    src.split(/\r?\n/).forEach(l => { const c = Sim.classify(l); if (c && c.mn) { const p = Sim.parseMnemonic(c.mn); if (p) used.add(p.op); } });
+    for (const f of spec.forbid) if ([...used].some(op => op.startsWith(f))) out.push({ ok: false, text: `The problem doesn't allow ${f} here.` });
+  }
+  const seen = new Set();
+  for (const c of spec.cases) {
+    if (c.type !== 'call' || seen.has(c.sub)) continue; seen.add(c.sub);
+    if (c.sub in prog.sym && prog.labelKind[c.sub] === 'code') {
+      const st = prog.stmts[prog.addrIndex.get(prog.sym[c.sub])];
+      if (st && (st.op === 'BX' || st.op === 'B' && st.args.trim() === 'stop')) out.push({ ok: false, text: `${c.sub} has no instructions yet: it only returns. (Any test it passes below is a coincidence.)` });
+    }
+  }
+  for (const c of spec.cases) {
+    let r;
+    try { r = runCase(Sim, prog, c, spec.limit); }
+    catch (e) { out.push({ ok: false, text: e.message }); continue; }
+    const { cpu, res, start } = r;
+    const name = c.name || (c.type === 'main' ? 'Run the whole program' : `${c.sub}(${Object.entries(c.regs || {}).map(([k, v]) => k.toUpperCase() + ' = ' + (typeof v === 'string' ? v : v > 255 ? hx(v) : v)).join(', ')})`);
+    if (res !== 'halted') {
+      const why = res === 'limit' ? 'it never reached "stop" (an endless loop?)' : (cpu.message || 'it stopped with an error');
+      out.push({ ok: false, text: `${name}: ${why}` }); continue;
+    }
+    const bad = [];
+    for (const [k, v] of Object.entries(c.expect || {})) {
+      const got = k === 'sp' ? cpu.r[13] : k === 'primask' ? cpu.primask : cpu.r[regNo(k)];
+      const want = v === 'init' ? Sim.SP_INIT : v >>> 0;
+      if (got !== want) bad.push(`${k.toUpperCase()} = ${hx(got)}, expected ${hx(want)}`);
+    }
+    for (const [lab, ws] of (c.words || [])) {
+      let a; try { a = addrOf(prog, lab); } catch (e) { bad.push(e.message); continue; }
+      const got = ws.map((_, i) => cpu.read32(a + 4 * i));
+      if (got.some((g, i) => g !== (ws[i] >>> 0))) bad.push(`${lab}: ${got.map(hx).join(' ')}, expected ${ws.map(w => hx(w)).join(' ')}`);
+    }
+    for (const [pt, [mask, want]] of Object.entries(c.pins || {})) {
+      const p = 'ABCDEF'.indexOf(pt), base = Sim.GPIO_BASES[p];
+      const drv = cpu.raw(base + 0x3FC) & cpu.raw(base + 0x400) & cpu.raw(base + 0x51C);
+      if ((drv & mask) !== (want & mask)) {
+        const show = v => [...Array(8)].map((_, i) => 7 - i).filter(i => (mask >> i) & 1).map(i => `P${pt}${i}=${(v >> i) & 1}`).join(' ');
+        bad.push(`output pins ${show(drv)}, expected ${show(want)}`);
+      }
+    }
+    if (c.keepRegs) for (const i of c.keepRegs) if (cpu.r[i] !== start['r' + i]) bad.push(`R${i} was changed (it must be restored)`);
+    if (c.keepRegs && cpu.r[13] !== start.sp) bad.push(`SP = ${hx(cpu.r[13])} after returning, expected ${hx(start.sp)} (PUSH and POP don't match)`);
+    if (c.cycles) { if (cpu.cycles < c.cycles[0] || cpu.cycles > c.cycles[1]) bad.push(`about ${cpu.cycles} cycles, expected ${c.cycles[0]}–${c.cycles[1]}`); }
+    if (c.keepAll) {
+      for (let i = 0; i <= 12; i++) {
+        const k = 'r' + i; if (c.expect && k in c.expect) continue;
+        if (cpu.r[i] !== start[k]) bad.push(`R${i} was changed (it must be restored)`);
+      }
+      if (cpu.r[13] !== start.sp) bad.push(`SP = ${hx(cpu.r[13])} after returning, expected ${hx(start.sp)} (PUSH and POP don't match)`);
+    }
+    out.push(bad.length ? { ok: false, text: `${name}: ${bad.slice(0, 3).join('; ')}` } : { ok: true, text: name });
+  }
+  return { ok: out.every(o => o.ok), items: out };
+}
+root.Checker = { check, runCase };
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>window.SIMDATA = {"3": {"starter": "; Port F is already set up: PF3-PF1 outputs (LEDs), PF4 input.\n\n\tAREA\tmain, CODE, READONLY\n\tTHUMB\n\tEXPORT\t__main\n__main\n\t; your code: red (PF1) off, green (PF3) on, blue (PF2) unchanged,\n\t; with one STR and no read of GPIODATA\n\nstop\tB\tstop\n\tEND\n", "spec": {"ports": ["F"], "boot": [["0x400FE608", [32]], ["0x40025400", [14]], ["0x4002551c", [31]], ["0x40025510", [16]], ["0x400253fc", [6]]], "cases": [{"type": "main", "name": "Red and blue on at the start", "setWords": [["0x400FE608", [32]], ["0x40025400", [14]], ["0x4002551c", [31]], ["0x40025510", [16]], ["0x400253fc", [6]]], "pins": {"F": [14, 12]}}, {"type": "main", "name": "Only red on at the start", "setWords": [["0x400FE608", [32]], ["0x40025400", [14]], ["0x4002551c", [31]], ["0x40025510", [16]], ["0x400253fc", [2]]], "pins": {"F": [14, 8]}}]}}, "4": {"starter": "SYSCTL_RCGCGPIO\tEQU\t0x400FE608\nGPIO_PORTF_DIR\tEQU\t0x40025400\nGPIO_PORTF_AFSEL\tEQU\t0x40025420\nGPIO_PORTF_PUR\tEQU\t0x40025510\nGPIO_PORTF_DEN\tEQU\t0x4002551C\nGPIO_PORTF_AMSEL\tEQU\t0x40025528\nGPIO_PORTF_PCTL\tEQU\t0x4002552C\n\n\tAREA\tmain, CODE, READONLY\n\tTHUMB\n\tEXPORT\t__main\n__main\n\t; your code: PF3-PF1 outputs, PF4 input with pull-up.\n\t; Don't change the bits of any other pin (or of other ports' clocks).\n\nstop\tB\tstop\n\tEND\n", "spec": {"ports": ["F"], "boot": [["0x400FE608", [1]], ["0x40025400", [145]], ["0x40025420", [159]], ["0x40025510", [1]], ["0x4002551c", [129]], ["0x40025528", [145]], ["0x4002552c", [4027580415]]], "cases": [{"type": "main", "name": "Port F registers after the run (other pins had settings that must stay)", "setWords": [["0x400FE608", [1]], ["0x40025400", [145]], ["0x40025420", [159]], ["0x40025510", [1]], ["0x4002551c", [129]], ["0x40025528", [145]], ["0x4002552c", [4027580415]]], "words": [["0x400FE608", [33]], ["0x40025400", [143]], ["0x40025420", [129]], ["0x4002552c", [4026531855]], ["0x40025528", [129]], ["0x40025510", [17]], ["0x4002551c", [159]]]}]}}, "5": {"starter": "SYSCTL_RCGCGPIO\tEQU\t0x400FE608\nGPIO_PORTF_DIR\tEQU\t0x40025400\nGPIO_PORTF_PUR\tEQU\t0x40025510\nGPIO_PORTF_DEN\tEQU\t0x4002551C\nGPIO_PORTF_LOCK\tEQU\t0x40025520\nGPIO_PORTF_CR\tEQU\t0x40025524\n\n\tAREA\tmain, CODE, READONLY\n\tTHUMB\n\tEXPORT\t__main\n__main\n\tLDR\tR1, =SYSCTL_RCGCGPIO\n\tLDR\tR0, [R1]\n\tORR\tR0, R0, #0x20\n\tSTR\tR0, [R1]\n\tNOP\n\tNOP\n\tLDR\tR1, =GPIO_PORTF_DIR\t; PF4 and PF0 inputs\n\tLDR\tR0, [R1]\n\tBIC\tR0, R0, #0x11\n\tSTR\tR0, [R1]\n\tLDR\tR1, =GPIO_PORTF_PUR\t; pull-ups for both switches\n\tLDR\tR0, [R1]\n\tORR\tR0, R0, #0x11\n\tSTR\tR0, [R1]\n\tLDR\tR1, =GPIO_PORTF_DEN\n\tLDR\tR0, [R1]\n\tORR\tR0, R0, #0x11\n\tSTR\tR0, [R1]\nstop\tB\tstop\n\tEND\n", "spec": {"ports": ["F"], "inputs": {"F": 17}, "cases": [{"type": "main", "name": "PUR and DEN of PF4 and PF0 after the run", "inputs": {"F": 17}, "words": [["0x40025510", [17]], ["0x4002551c", [17]]]}, {"type": "main", "name": "Both switches readable (released = 1)", "inputs": {"F": 17}, "words": [["0x40025044", [17]]]}]}}, "6": {"starter": "SYSCTL_RCGCGPIO\tEQU\t0x400FE608\nGPIO_PORTB_DIR\tEQU\t0x40005400\nGPIO_PORTB_AFSEL\tEQU\t0x40005420\nGPIO_PORTB_DEN\tEQU\t0x4000551C\nPB_LEDS\tEQU\t0x400050C0\t\t; PB5 and PB4 only\n\n\tAREA\tmain, CODE, READONLY\n\tTHUMB\n\tEXPORT\t__main\n__main\n\tLDR\tR1, =GPIO_PORTB_DIR\t; PB5, PB4 outputs\n\tLDR\tR0, [R1]\n\tORR\tR0, R0, #0x30\n\tSTR\tR0, [R1]\n\tLDR\tR1, =SYSCTL_RCGCGPIO\t; clock for Port B\n\tMOV\tR0, #0x02\n\tSTR\tR0, [R1]\n\tNOP\n\tNOP\n\tLDR\tR1, =GPIO_PORTB_AFSEL\t; plain GPIO\n\tLDR\tR0, [R1]\n\tBIC\tR0, R0, #0x30\n\tSTR\tR0, [R1]\n\tLDR\tR1, =PB_LEDS\n\tMOV\tR0, #0x30\t\t; both LEDs on\n\tSTR\tR0, [R1]\nstop\tB\tstop\n\tEND\n", "spec": {"ports": ["B"], "boot": [["0x400FE608", [1]], ["0x40005400", [12]], ["0x40005420", [3]], ["0x4000551c", [15]]], "cases": [{"type": "main", "name": "Clocks and Port B registers after the run", "setWords": [["0x400FE608", [1]], ["0x40005400", [12]], ["0x40005420", [3]], ["0x4000551c", [15]]], "words": [["0x400FE608", [3]], ["0x40005400", [60]], ["0x40005420", [3]], ["0x4000551c", [63]]]}, {"type": "main", "name": "Both LEDs (PB5, PB4) light up", "setWords": [["0x400FE608", [1]], ["0x40005400", [12]], ["0x40005420", [3]], ["0x4000551c", [15]]], "pins": {"B": [48, 48]}}]}}, "8": {"starter": "; Port B is already set up: PB3-PB0 inputs with pull-downs (pressed = 1),\n; PB7-PB4 outputs used by other code.\n\n\tAREA\tmain, CODE, READONLY\n\tTHUMB\n\tEXPORT\t__main\n__main\n\tBL\tREADSW\nstop\tB\tstop\n\n; READSW: R0 = number (1-4) of the lowest pressed switch, 0 if none\nREADSW\n\t; your code\n\n\tBX\tLR\n\tEND\n", "spec": {"ports": ["B"], "boot": [["0x400FE608", [2]], ["0x40005400", [240]], ["0x4000551c", [255]], ["0x40005514", [15]], ["0x400053fc", [160]]], "inputs": {"B": 4}, "cases": [{"type": "call", "sub": "READSW", "keepAll": true, "name": "Nothing pressed (PB7-PB4 outputs are 1)", "setWords": [["0x400FE608", [2]], ["0x40005400", [240]], ["0x4000551c", [255]], ["0x40005514", [15]], ["0x400053fc", [240]]], "inputs": {"B": 0}, "expect": {"r0": 0}}, {"type": "call", "sub": "READSW", "keepAll": true, "name": "PB0 pressed", "setWords": [["0x400FE608", [2]], ["0x40005400", [240]], ["0x4000551c", [255]], ["0x40005514", [15]], ["0x400053fc", [0]]], "inputs": {"B": 1}, "expect": {"r0": 1}}, {"type": "call", "sub": "READSW", "keepAll": true, "name": "PB2 pressed", "setWords": [["0x400FE608", [2]], ["0x40005400", [240]], ["0x4000551c", [255]], ["0x40005514", [15]], ["0x400053fc", [160]]], "inputs": {"B": 4}, "expect": {"r0": 3}}, {"type": "call", "sub": "READSW", "keepAll": true, "name": "PB3 and PB2 pressed", "setWords": [["0x400FE608", [2]], ["0x40005400", [240]], ["0x4000551c", [255]], ["0x40005514", [15]], ["0x400053fc", [80]]], "inputs": {"B": 12}, "expect": {"r0": 3}}, {"type": "call", "sub": "READSW", "keepAll": true, "name": "PB3 pressed", "setWords": [["0x400FE608", [2]], ["0x40005400", [240]], ["0x4000551c", [255]], ["0x40005514", [15]], ["0x400053fc", [240]]], "inputs": {"B": 8}, "expect": {"r0": 4}}]}}, "9": {"starter": "; Port B is already set up: PB7-PB0 outputs. PB6-PB0 drive segments g..a (1 = on).\n; PB7 drives an LED that belongs to other code.\n\n\tAREA\ttables, DATA, READONLY\nSEGS\tDCB\t0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F\n\n\tAREA\tmain, CODE, READONLY\n\tTHUMB\n\tEXPORT\t__main\n__main\n\tMOV\tR0, #7\n\tBL\tSHOWDIG\nstop\tB\tstop\n\n; SHOWDIG: show digit R0 (0-9); PB7 must not change\nSHOWDIG\n\t; your code\n\n\tBX\tLR\n\tEND\n", "spec": {"ports": ["B"], "boot": [["0x400FE608", [2]], ["0x40005400", [255]], ["0x4000551c", [255]], ["0x400053fc", [128]]], "cases": [{"type": "call", "sub": "SHOWDIG", "keepAll": true, "name": "SHOWDIG(7) with the PB7 LED on", "regs": {"r0": 7}, "setWords": [["0x400FE608", [2]], ["0x40005400", [255]], ["0x4000551c", [255]], ["0x400053fc", [128]]], "pins": {"B": [255, 135]}}, {"type": "call", "sub": "SHOWDIG", "keepAll": true, "name": "SHOWDIG(2) with the PB7 LED off", "regs": {"r0": 2}, "setWords": [["0x400FE608", [2]], ["0x40005400", [255]], ["0x4000551c", [255]], ["0x400053fc", [0]]], "pins": {"B": [255, 91]}}, {"type": "call", "sub": "SHOWDIG", "keepAll": true, "name": "SHOWDIG(8) with the PB7 LED on", "regs": {"r0": 8}, "setWords": [["0x400FE608", [2]], ["0x40005400", [255]], ["0x4000551c", [255]], ["0x400053fc", [128]]], "pins": {"B": [255, 255]}}, {"type": "call", "sub": "SHOWDIG", "keepAll": true, "name": "SHOWDIG(0) after an 8 was shown", "regs": {"r0": 0}, "setWords": [["0x400FE608", [2]], ["0x40005400", [255]], ["0x4000551c", [255]], ["0x400053fc", [127]]], "pins": {"B": [255, 63]}}]}}, "10": {"starter": "; Port D is already set up: PD3-PD0 = rows 1-4 (outputs),\n; PD6-PD4 = columns 1-3 (inputs with pull-ups).\n\n\tAREA\tmain, CODE, READONLY\n\tTHUMB\n\tEXPORT\t__main\n__main\n\tBL\tKEYSCAN\nstop\tB\tstop\n\n; KEYSCAN: R0 = 3 * row + column (rows 0-3, columns 0-2), or 0xFF if no key.\n; Leave all rows low before returning.\nKEYSCAN\n\t; your code\n\n\tBX\tLR\n\tEND\n", "spec": {"ports": ["D"], "boot": [["0x400FE608", [8]], ["0x40007400", [15]], ["0x4000751c", [127]], ["0x40007510", [112]]], "keypad": {"port": "D", "rows": [0, 1, 2, 3], "cols": [4, 5, 6]}, "cases": [{"type": "call", "sub": "KEYSCAN", "keepAll": true, "name": "No key pressed", "setWords": [["0x400FE608", [8]], ["0x40007400", [15]], ["0x4000751c", [127]], ["0x40007510", [112]]], "keypad": {"port": "D", "rows": [0, 1, 2, 3], "cols": [4, 5, 6], "key": null}, "expect": {"r0": 255}, "pins": {"D": [15, 0]}}, {"type": "call", "sub": "KEYSCAN", "keepAll": true, "name": "Key 1 (row 0, column 0)", "setWords": [["0x400FE608", [8]], ["0x40007400", [15]], ["0x4000751c", [127]], ["0x40007510", [112]]], "keypad": {"port": "D", "rows": [0, 1, 2, 3], "cols": [4, 5, 6], "key": [0, 0]}, "expect": {"r0": 0}, "pins": {"D": [15, 0]}}, {"type": "call", "sub": "KEYSCAN", "keepAll": true, "name": "Key 6 (row 1, column 2)", "setWords": [["0x400FE608", [8]], ["0x40007400", [15]], ["0x4000751c", [127]], ["0x40007510", [112]]], "keypad": {"port": "D", "rows": [0, 1, 2, 3], "cols": [4, 5, 6], "key": [1, 2]}, "expect": {"r0": 5}, "pins": {"D": [15, 0]}}, {"type": "call", "sub": "KEYSCAN", "keepAll": true, "name": "Key 7 (row 2, column 0)", "setWords": [["0x400FE608", [8]], ["0x40007400", [15]], ["0x4000751c", [127]], ["0x40007510", [112]]], "keypad": {"port": "D", "rows": [0, 1, 2, 3], "cols": [4, 5, 6], "key": [2, 0]}, "expect": {"r0": 6}, "pins": {"D": [15, 0]}}, {"type": "call", "sub": "KEYSCAN", "keepAll": true, "name": "Key 0 (row 3, column 1)", "setWords": [["0x400FE608", [8]], ["0x40007400", [15]], ["0x4000751c", [127]], ["0x40007510", [112]]], "keypad": {"port": "D", "rows": [0, 1, 2, 3], "cols": [4, 5, 6], "key": [3, 1]}, "expect": {"r0": 10}, "pins": {"D": [15, 0]}}]}}, "12": {"starter": "; Port F is already set up: PF4 input with pull-up (SW1, pressed = 0).\nGPIO_PORTF_IS\tEQU\t0x40025404\nGPIO_PORTF_IBE\tEQU\t0x40025408\nGPIO_PORTF_IEV\tEQU\t0x4002540C\nGPIO_PORTF_IM\tEQU\t0x40025410\nGPIO_PORTF_ICR\tEQU\t0x4002541C\nNVIC_EN0\tEQU\t0xE000E100\nNVIC_PRI7\tEQU\t0xE000E41C\n\n\tAREA\tmain, CODE, READONLY\n\tTHUMB\n\tEXPORT\t__main\n__main\n\t; your code: falling-edge interrupt on PF4, IRQ 30 enabled with\n\t; priority 2, interrupts switched on globally\n\nstop\tB\tstop\n\tEND\n", "spec": {"ports": ["F"], "boot": [["0x400FE608", [32]], ["0x40025400", [14]], ["0x4002551c", [31]], ["0x40025510", [16]], ["0x40025404", [17]], ["0x40025408", [16]], ["0x4002540c", [17]], ["0x40025410", [1]], ["0x40025414", [16]], ["0xe000e41c", [287454020]]], "cases": [{"type": "main", "name": "GPIO interrupt registers (PF0 had settings that must stay)", "setWords": [["0x400FE608", [32]], ["0x40025400", [14]], ["0x4002551c", [31]], ["0x40025510", [16]], ["0x40025404", [17]], ["0x40025408", [16]], ["0x4002540c", [17]], ["0x40025410", [1]], ["0x40025414", [16]], ["0xe000e41c", [287454020]]], "primask": 1, "words": [["0x40025404", [1]], ["0x40025408", [0]], ["0x4002540c", [1]], ["0x40025410", [17]], ["0x40025414", [0]]]}, {"type": "main", "name": "NVIC: ISER0, IPR7 (started as 0x11223344) and PRIMASK", "setWords": [["0x400FE608", [32]], ["0x40025400", [14]], ["0x4002551c", [31]], ["0x40025510", [16]], ["0x40025404", [17]], ["0x40025408", [16]], ["0x4002540c", [17]], ["0x40025410", [1]], ["0x40025414", [16]], ["0xe000e41c", [287454020]]], "primask": 1, "words": [["0xe000e100", [1073741824]], ["0xe000e41c", [289420100]]], "expect": {"primask": 0}}]}}, "13": {"starter": "; Port F: PF3-PF1 LEDs (outputs), PF4 = SW1 and PF0 = SW2 (falling-edge interrupts).\nGPIO_PORTF_MIS\tEQU\t0x40025418\nGPIO_PORTF_ICR\tEQU\t0x4002541C\n\n\tAREA\tmain, CODE, READONLY\n\tTHUMB\n\tEXPORT\t__main\n__main\n\tBL\tGPIOF_Handler\t\t; (in a real program the NVIC calls it)\nstop\tB\tstop\n\nGPIOF_Handler\n\t; your code: SW1 toggles red (PF1), SW2 toggles green (PF3)\n\n\tBX\tLR\n\tEND\n", "spec": {"ports": ["F"], "boot": [["0x400FE608", [32]], ["0x40025400", [14]], ["0x4002551c", [31]], ["0x40025510", [17]], ["0x40025410", [17]], ["0x40025414", [16]], ["0x400253fc", [4]]], "cases": [{"type": "call", "sub": "GPIOF_Handler", "keepRegs": [4, 5, 6, 7, 8, 9, 10, 11], "name": "SW1 only (blue on): red toggles on", "setWords": [["0x400FE608", [32]], ["0x40025400", [14]], ["0x4002551c", [31]], ["0x40025510", [17]], ["0x40025410", [17]], ["0x40025414", [16]], ["0x400253fc", [4]]], "pins": {"F": [14, 6]}, "words": [["0x40025414", [0]]]}, {"type": "call", "sub": "GPIOF_Handler", "keepRegs": [4, 5, 6, 7, 8, 9, 10, 11], "name": "SW2 only (red, green on): green toggles off", "setWords": [["0x400FE608", [32]], ["0x40025400", [14]], ["0x4002551c", [31]], ["0x40025510", [17]], ["0x40025410", [17]], ["0x40025414", [1]], ["0x400253fc", [10]]], "pins": {"F": [14, 2]}, "words": [["0x40025414", [0]]]}, {"type": "call", "sub": "GPIOF_Handler", "keepRegs": [4, 5, 6, 7, 8, 9, 10, 11], "name": "Both switches at once", "setWords": [["0x400FE608", [32]], ["0x40025400", [14]], ["0x4002551c", [31]], ["0x40025510", [17]], ["0x40025410", [17]], ["0x40025414", [17]], ["0x400253fc", [0]]], "pins": {"F": [14, 10]}, "words": [["0x40025414", [0]]]}, {"type": "call", "sub": "GPIOF_Handler", "keepRegs": [4, 5, 6, 7, 8, 9, 10, 11], "name": "SW1 plus a masked flag on PF2 (must be left alone)", "setWords": [["0x400FE608", [32]], ["0x40025400", [14]], ["0x4002551c", [31]], ["0x40025510", [17]], ["0x40025410", [17]], ["0x40025414", [20]], ["0x400253fc", [2]]], "pins": {"F": [14, 0]}, "words": [["0x40025414", [4]]]}]}}, "15": {"starter": "SYSCTL_RCGCGPIO\tEQU\t0x400FE608\nGPIO_PORTB_DIR\tEQU\t0x40005400\nGPIO_PORTB_IS\tEQU\t0x40005404\nGPIO_PORTB_IBE\tEQU\t0x40005408\nGPIO_PORTB_IEV\tEQU\t0x4000540C\nGPIO_PORTB_IM\tEQU\t0x40005410\nGPIO_PORTB_ICR\tEQU\t0x4000541C\nGPIO_PORTB_AFSEL\tEQU\t0x40005420\nGPIO_PORTB_PUR\tEQU\t0x40005510\nGPIO_PORTB_PDR\tEQU\t0x40005514\nGPIO_PORTB_DEN\tEQU\t0x4000551C\nGPIO_PORTB_AMSEL\tEQU\t0x40005528\nGPIO_PORTB_PCTL\tEQU\t0x4000552C\n\n\tAREA\tmain, CODE, READONLY\n\tTHUMB\n\tEXPORT\t__main\n__main\n\t; 1) clock for Port B only\n\n\t; 2) PB5, PB4: analog off, digital on, plain GPIO (AMSEL, DEN, PCTL, AFSEL)\n\n\t; 3) PB4 input (switch), PB5 output (LED)\n\n\t; 4) pull-down on PB4, pull-up off\n\n\t; 5) PB4 interrupt: edge, one edge, rising, flag cleared, unmasked\n\nstop\tB\tstop\n\tEND\n", "spec": {"ports": ["B"], "boot": [["0x400FE608", [33]], ["0x40005528", [63]], ["0x4000551c", [15]], ["0x4000552c", [16711935]], ["0x40005420", [51]], ["0x40005400", [28]], ["0x40005514", [0]], ["0x40005510", [16]], ["0x40005404", [16]], ["0x40005408", [16]], ["0x4000540c", [0]], ["0x40005410", [0]], ["0x40005414", [16]]], "cases": [{"type": "main", "name": "Clock, pin setup and pull resistors (other pins and ports must stay)", "setWords": [["0x400FE608", [33]], ["0x40005528", [63]], ["0x4000551c", [15]], ["0x4000552c", [16711935]], ["0x40005420", [51]], ["0x40005400", [28]], ["0x40005514", [0]], ["0x40005510", [16]], ["0x40005404", [16]], ["0x40005408", [16]], ["0x4000540c", [0]], ["0x40005410", [0]], ["0x40005414", [16]]], "words": [["0x400FE608", [35]], ["0x40005528", [15]], ["0x4000551c", [63]], ["0x4000552c", [255]], ["0x40005420", [3]], ["0x40005400", [44]], ["0x40005514", [16]], ["0x40005510", [0]]]}, {"type": "main", "name": "Interrupt registers for PB4", "setWords": [["0x400FE608", [33]], ["0x40005528", [63]], ["0x4000551c", [15]], ["0x4000552c", [16711935]], ["0x40005420", [51]], ["0x40005400", [28]], ["0x40005514", [0]], ["0x40005510", [16]], ["0x40005404", [16]], ["0x40005408", [16]], ["0x4000540c", [0]], ["0x40005410", [0]], ["0x40005414", [16]]], "words": [["0x40005404", [0]], ["0x40005408", [0]], ["0x4000540c", [16]], ["0x40005410", [16]], ["0x40005414", [0]]]}]}}};</script>
+<script>
+(function(){
+  var store={get:function(k){try{return localStorage.getItem(k)}catch(e){return null}},set:function(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+  var H=function(v){return '0x'+(v>>>0).toString(16).toUpperCase().padStart(8,'0')};
+  var esc=function(t){return String(t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
+  var built={};
+  function build(box){
+    var n=box.dataset.n, data=SIMDATA[n], key='w6-code-'+n, nn=String(n).padStart(2,'0');
+    box.innerHTML=
+      '<div class="sim-bar">'+
+        '<button type="button" class="sbtn pri" data-a="run">Run</button>'+
+        '<button type="button" class="sbtn" data-a="step">Step</button>'+
+        '<button type="button" class="sbtn" data-a="reset">Reset</button>'+
+        '<button type="button" class="sbtn chk" data-a="check">Check</button>'+
+        '<span class="sp"></span>'+
+        '<button type="button" class="sbtn" data-a="starter">Starter code</button>'+
+      '</div>'+
+      '<div class="sim-body"><div class="sim-edwrap"><pre class="sim-gut" aria-hidden="true"></pre><div class="sim-edbox"><div class="sim-hl" hidden></div><textarea class="sim-ed" id="sim-ed-'+nn+'" spellcheck="false" autocapitalize="off" autocomplete="off" wrap="off" aria-label="Your code for problem '+n+'"></textarea></div></div>'+
+      '<div class="sim-out">'+
+        '<div class="sim-msg" role="status" aria-live="polite"></div>'+
+        '<ul class="sim-checks" hidden></ul>'+
+        (data.spec.ports?'<div class="sim-pins"></div>':'')+
+        '<div class="sim-regs"></div>'+
+        '<div class="sim-flags"></div>'+
+        '<div class="sim-mem"><div class="sim-memhead"><label for="sim-mem-'+nn+'">Memory at</label><input id="sim-mem-'+nn+'" type="text" placeholder="label or 0x…"><span class="sim-note">8 words</span></div><div class="sim-memtab"></div></div>'+
+        '<p class="sim-note">Keil syntax. Code from 0x100, READONLY data from 0x1000, READWRITE data from 0x20002000, SP = 0x20000400. Cycles are approximate: 1 per instruction, 2 per taken branch. Check runs each subroutine with every other register set to junk (like 0xA0000001), so give every register you use its own starting value inside the subroutine.</p>'+
+      '</div></div>';
+    var gut=box.querySelector('.sim-gut'), hlb=box.querySelector('.sim-hl'), ed=box.querySelector('.sim-ed'), msg=box.querySelector('.sim-msg'), regs=box.querySelector('.sim-regs'), flags=box.querySelector('.sim-flags'),
+        memIn=box.querySelector('.sim-memhead input'), memTab=box.querySelector('.sim-memtab'), checks=box.querySelector('.sim-checks');
+    var pinsEl=box.querySelector('.sim-pins');
+    ed.value=store.get(key)||data.starter;
+    var st={prog:null,cpu:null,dirty:true,memAddr:null,escTab:false,starterArm:0};
+    ed.addEventListener('input',function(){st.dirty=true;store.set(key,ed.value);drawGutter();if(/err/.test(msg.className)){msg.className='sim-msg';msg.textContent='Code changed. Press Run, Step or Check.'}});
+    ed.addEventListener('keydown',function(e){
+      if(e.key==='Escape'){st.escTab=true;return}
+      if(e.key==='Tab'&&!e.shiftKey&&!st.escTab){e.preventDefault();var a=ed.selectionStart,b=ed.selectionEnd;ed.value=ed.value.slice(0,a)+'\t'+ed.value.slice(b);ed.selectionStart=ed.selectionEnd=a+1;st.dirty=true;store.set(key,ed.value);drawGutter();return}
+      st.escTab=false;
+    });
+    var LH=21,PADT=10;
+    // Addresses come from a live assembly of whatever is in the editor, so they show
+    // without pressing Run/Step. With an error, only the lines above the first error get one.
+    var live={src:null,prog:null};
+    function addrMap(){
+      var m={};
+      if(live.src!==ed.value){live.src=ed.value;try{live.prog=Sim.assemble(ed.value,data.spec.mem||'')}catch(e){live.prog=null}}
+      var p=live.prog;if(!p)return m;
+      var stop=p.errors.length?Math.min.apply(null,p.errors.map(function(e){return e.line||1e9})):1e9;
+      p.stmts.forEach(function(x){if(x.line<stop)m[x.line]=x.addr});
+      return m}
+    function drawGutter(){
+      var n=ed.value.split('\n').length,m=addrMap(),cur=curLine(),rows=[];
+      for(var i=1;i<=n;i++){var a=m[i]!==undefined?H(m[i]):'          ';rows.push('<span class="'+(i===cur.line?'g-cur'+(cur.err?' g-err':''):'')+'">'+String(i).padStart(3,' ')+'  '+a+'</span>')}
+      gut.innerHTML=rows.join('\n');gut.scrollTop=ed.scrollTop;placeHL();
+    }
+    function curLine(){
+      var p=st.prog,c=st.cpu;
+      if(st.dirty||!p)return {line:0};
+      if(p.errors.length)return {line:p.errors[0].line,err:true};
+      if(c){var x=p.stmts[c.pcIdx];if(c.state==='error'&&c.last){x=p.stmts[c.last.idx]||x}return x?{line:x.line,err:c.state==='error'}:{line:0}}
+      return {line:0};
+    }
+    function placeHL(){
+      var cur=curLine();
+      if(!cur.line){hlb.hidden=true;return}
+      hlb.hidden=false;hlb.classList.toggle('err',!!cur.err);
+      hlb.style.top=(PADT+(cur.line-1)*LH-ed.scrollTop)+'px';
+    }
+    ed.addEventListener('scroll',function(){gut.scrollTop=ed.scrollTop;placeHL()});
+    function ensure(){
+      if(!st.dirty&&st.prog)return !!st.cpu;
+      st.dirty=false;st.prog=Sim.assemble(ed.value,data.spec.mem||'');st.cpu=null;
+      if(st.prog.errors.length){return false}
+      st.cpu=new Sim.CPU(st.prog);boot(st.cpu);return true;
+    }
+    function boot(c){
+      (data.spec.boot||[]).forEach(function(x){var ad=parseInt(x[0],16)>>>0;x[1].forEach(function(w,i){for(var k=0;k<4;k++)c.mem.set((ad+4*i+k)>>>0,(w>>>(8*k))&255)})});
+      if(!st.inputs)st.inputs=Object.assign({},data.spec.inputs||{});
+      for(var pt in st.inputs)c.mem.set(Sim.GPIO_BASES['ABCDEF'.indexOf(pt)]+0xF00,st.inputs[pt]&255);
+      var kp=data.spec.keypad;if(kp)c.keypad={port:'ABCDEF'.indexOf(kp.port),rows:kp.rows,cols:kp.cols,colMask:kp.cols.reduce(function(m,x){return m|(1<<x)},0),key:st.key||null};
+    }
+    function renderPins(){
+      if(!pinsEl)return;var c=st.cpu,html='';
+      data.spec.ports.forEach(function(pt){
+        var p='ABCDEF'.indexOf(pt),b=Sim.GPIO_BASES[p];
+        var dir=c?c.raw(b+0x400):0,den=c?c.raw(b+0x51C):0,lv=c?c.pinLevels(p):0,inp=c?c.raw(b+0xF00):(st.inputs&&st.inputs[pt])||0;
+        html+='<div class="pinrow"><b>Port '+pt+'</b>';
+        for(var i=7;i>=0;i--){var o=(dir>>i)&1,e=(den>>i)&1,v=o?((lv>>i)&1):((inp>>i)&1);
+          var cls=!e?'off':o?'out':'in';
+          html+='<span class="pin '+cls+(v?' on':'')+'"'+(cls==='in'||(!e&&!o)?' data-pt="'+pt+'" data-pin="'+i+'" role="button" tabindex="0" title="Click to change the level on this input"':'')+'><i></i>P'+pt+i+'</span>'}
+        html+='</div>'});
+      var kp=data.spec.keypad;
+      if(kp){var lab=['1','2','3','4','5','6','7','8','9','*','0','#'];html+='<div class="pinrow"><b>Keypad</b><div class="kp">'+lab.map(function(l,k){var r=Math.floor(k/3),cc=k%3,on=st.key&&st.key[0]===r&&st.key[1]===cc;return '<button type="button" data-key="'+k+'" class="'+(on?'on':'')+'">'+l+'</button>'}).join('')+'</div></div>'}
+      pinsEl.innerHTML=html+'<p class="sim-note">Yellow = output pin at 1. Click an input pin (square) to change its level; dimmed pins have DEN = 0.</p>';
+    }
+    if(pinsEl)pinsEl.addEventListener('click',function(e){
+      var k=e.target.closest('[data-key]');
+      if(k){var n2=+k.dataset.key,rc=[Math.floor(n2/3),n2%3];st.key=(st.key&&st.key[0]===rc[0]&&st.key[1]===rc[1])?null:rc;if(st.cpu&&st.cpu.keypad)st.cpu.keypad.key=st.key;render();return}
+      var el=e.target.closest('[data-pin]');if(!el)return;var pt=el.dataset.pt,bit=1<<(+el.dataset.pin);
+      st.inputs=st.inputs||{};st.inputs[pt]=((st.inputs[pt]||0)^bit)&255;
+      if(st.cpu)st.cpu.setInputs('ABCDEF'.indexOf(pt),st.inputs[pt]);render();
+    });
+    function lineText(ln){return (ed.value.split(/\r?\n/)[ln-1]||'').trim()}
+    function render(prev){
+      var p=st.prog,c=st.cpu;
+      if(p&&p.errors.length){
+        msg.className='sim-msg err';
+        msg.innerHTML='Your code doesn\'t assemble:<ul>'+p.errors.slice(0,6).map(function(e){return '<li>'+(e.where==='mem'?'Starting memory':'Line '+e.line)+': '+esc(e.msg)+'</li>'}).join('')+'</ul>';
+      } else if(c){
+        if(c.state==='error'){msg.className='sim-msg err';msg.textContent=c.message}
+        else if(c.state==='halted'){msg.className='sim-msg ok';msg.textContent='Reached "stop" after '+c.steps+' instructions (about '+c.cycles+' cycles).'}
+        else {var nx=p.stmts[c.pcIdx];msg.className='sim-msg';msg.innerHTML=(c.steps?c.steps+' instructions so far. ':'Ready. ')+(nx?'Next: line '+nx.line+'  <code>'+esc(lineText(nx.line))+'</code>':'')}
+      } else {msg.className='sim-msg';msg.textContent='Press Run or Step.'}
+      var names=['R0','R1','R2','R3','R4','R5','R6','R7','R8','R9','R10','R11','R12','SP','LR','PC'];
+      var r=c?c.r:new Array(16).fill(0);
+      var old=prev||(c&&c.history.length?c.history[c.history.length-1].r:null);
+      regs.innerHTML=names.map(function(nm,i){var ch=old&&i<15&&old[i]!==r[i];return '<div class="sreg'+(ch?' chg':'')+'"><b>'+nm+'</b><span>'+H(r[i])+'</span></div>'}).join('');
+      var f=c?[['N',c.N],['Z',c.Z],['C',c.C],['V',c.V],['PRIMASK',c.primask]]:[['N',0],['Z',0],['C',0],['V',0],['PRIMASK',0]];
+      drawGutter();
+      flags.innerHTML=f.map(function(x){return '<span class="'+(x[1]?'on':'')+'">'+x[0]+' '+x[1]+'</span>'}).join('')+(c?'<span>cycles ≈ '+c.cycles+'</span>':'');
+      renderMem();renderPins();
+    }
+    function defaultAddr(){
+      var p=st.prog;if(p&&!p.errors.length){for(var k in p.sym){if(p.labelKind[k]==='data')return k}}
+      return '0x200003E0';
+    }
+    function renderMem(){
+      var c=st.cpu,p=st.prog,txt=(memIn.value||'').trim()||defaultAddr();
+      if(!memIn.value)memIn.placeholder=txt;
+      var a=null;
+      if(/^0x[0-9a-f]+$/i.test(txt))a=parseInt(txt,16)>>>0;else if(p&&txt in p.sym)a=p.sym[txt]>>>0;
+      if(a===null){memTab.innerHTML='<p class="sim-note">Type a label from your code or an address like 0x20000400.</p>';return}
+      a=a&~3;var labs={};if(p)for(var k in p.sym){if(p.labelKind[k]==='data')labs[p.sym[k]>>>0]=k}
+      var rows='';for(var i=0;i<8;i++){var ad=(a+4*i)>>>0,v=c?c.read32(ad):(p&&!p.errors.length?rd(p.mem,ad):0);
+        var w=c&&[0,1,2,3].some(function(b){return c.lastWrites.has((ad+b)>>>0)});
+        var sp=c&&c.r[13]===ad?' ← SP':'';
+        rows+='<tr><td>'+H(ad)+'</td><td class="'+(w?'w':'')+'">'+H(v)+'</td><td class="lab">'+(labs[ad]||'')+sp+'</td></tr>'}
+      memTab.innerHTML='<table><tbody>'+rows+'</tbody></table>';
+    }
+    function rd(m,a){var v=0;for(var b=0;b<4;b++)v|=(m.get((a+b)>>>0)||0)<<(8*b);return v>>>0}
+    memIn.addEventListener('input',renderMem);
+    box.querySelector('.sim-bar').addEventListener('click',function(e){
+      var b=e.target.closest('[data-a]');if(!b)return;var a=b.dataset.a;
+      if(a!=='starter'&&st.starterArm){st.starterArm=0;box.querySelector('[data-a="starter"]').textContent='Starter code'}
+      if(a==='run'){if(st.dirty||!st.cpu||st.cpu.state==='halted'||st.cpu.state==='error'){st.dirty=true}if(!ensure()){render();return}var before=st.cpu.r.slice();st.cpu.run(300000);render(before);
+        if(st.cpu.state!=='halted'&&st.cpu.state!=='error'){msg.className='sim-msg err';msg.textContent='Stopped after 300 000 instructions without reaching "stop". Is there an endless loop?'}}
+      else if(a==='step'){if(!ensure()){render();return}if(st.cpu.state==='halted'||st.cpu.state==='error'){render();return}st.cpu.step();render()}
+      else if(a==='reset'){st.dirty=true;ensure();render()}
+      else if(a==='check'){st.dirty=true;ensure();render();var res=Checker.check(Sim,ed.value,data.spec);checks.hidden=false;
+        var okn=res.items.filter(function(i){return i.ok}).length;
+        checks.innerHTML='<li class="sim-sum">'+(res.ok?'All '+okn+' checks pass.':okn+' of '+res.items.length+' checks pass.')+'</li>'+res.items.map(function(i){return '<li class="'+(i.ok?'ok':'bad')+'"><b>'+(i.ok?'Pass':'Fail')+'</b><span>'+esc(i.text)+'</span></li>'}).join('');
+        if(res.ok){var cb=document.getElementById('done-'+nn);if(cb&&!cb.checked){cb.checked=true;cb.dispatchEvent(new Event('change'))}}}
+      else if(a==='starter'){if(!st.starterArm){st.starterArm=1;b.textContent='Click again to replace your code';setTimeout(function(){if(st.starterArm){st.starterArm=0;b.textContent='Starter code'}},3500);return}
+        st.starterArm=0;b.textContent='Starter code';ed.value=data.starter;store.set(key,ed.value);st.dirty=true;checks.hidden=true;ensure();render()}
+    });
+    ensure();render();
+  }
+  document.querySelectorAll('pre[data-addr]').forEach(function(pre){
+    try{var lines=Array.prototype.map.call(pre.querySelectorAll('.cl'),function(l){return l.textContent});var p=Sim.assemble(lines.join('\n'));
+      p.stmts.forEach(function(x){var el=pre.querySelector('.cl[data-n="'+String(x.line).padStart(2,' ')+'"]');if(el)el.setAttribute('data-a',H(x.addr))})}catch(e){}
+  });
+  document.querySelectorAll('.simbtn').forEach(function(b){b.addEventListener('click',function(){var box=document.getElementById(b.dataset.target);if(!built[box.id]){built[box.id]=1;build(box)}})});
+})();
+</script>
+<script>
+(function(){
+  var store={get:function(k){try{return localStorage.getItem(k)}catch(e){return null}},set:function(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+  var body=document.body;
+  document.querySelectorAll('.reveal').forEach(function(b){b.addEventListener('click',function(){
+    var el=document.getElementById(b.dataset.target);var open=el.hidden;el.hidden=!open;b.setAttribute('aria-expanded',String(open))})});
+  var boxes=document.querySelectorAll('[data-done]');
+  function upd(){var n=0;boxes.forEach(function(c){if(c.checked)n++;c.closest('.card').classList.toggle('is-done',c.checked)});
+    document.getElementById('done-n').textContent=n;document.getElementById('meter').style.width=(100*n/boxes.length)+'%'}
+  var saved={};try{saved=JSON.parse(store.get('w6-done')||'{}')}catch(e){}
+  boxes.forEach(function(c){c.checked=!!saved[c.dataset.done];c.addEventListener('change',function(){saved[c.dataset.done]=c.checked;store.set('w6-done',JSON.stringify(saved));upd()})});
+  upd();
+  document.querySelectorAll('[data-copy]').forEach(function(b){b.addEventListener('click',function(){
+    var box=b.closest('.code');var pre=box.querySelector('pre');var txt=Array.prototype.map.call(pre.querySelectorAll('.cl'),function(l){return l.textContent.replace(/\s+$/,'')}).join('\n');
+    function done(m){b.textContent=m;setTimeout(function(){b.textContent='Copy'},1400)}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(function(){done('Copied')},function(){sel(pre);done('Select + ⌘C')})}else{sel(pre);done('Select + ⌘C')}
+  })});
+  function sel(el){var r=document.createRange();r.selectNodeContents(el);var s=getSelection();s.removeAllRanges();s.addRange(r)}
+})();
+</script>
+
+</body>
+</html>
